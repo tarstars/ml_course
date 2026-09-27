@@ -1,0 +1,1414 @@
+{
+  "schema_version": 1,
+  "title": "Machine Learning",
+  "subtitle": "Материалы курса",
+  "academic_year": "2024 — 2025",
+  "repository": "https://github.com/tarstars/ml_course",
+  "modules": [
+    {
+      "id": "foundations",
+      "title": "Основы машинного обучения",
+      "short": "Основы ML",
+      "description": "От данных и линейных моделей до ансамблей и байесовского подхода."
+    },
+    {
+      "id": "deep-learning",
+      "title": "Глубокое обучение",
+      "short": "Deep Learning",
+      "description": "Нейросети, оптимизация, матричные производные и рекуррентные модели."
+    },
+    {
+      "id": "advanced",
+      "title": "Современные архитектуры",
+      "short": "Продвинутые темы",
+      "description": "Практика обучения, трансформеры, обучение с подкреплением и интерпретация."
+    }
+  ],
+  "classes": [
+    {
+      "id": "intro",
+      "title": "Данные и линейные модели",
+      "date": null,
+      "module": "foundations",
+      "summary": "Первые шаги в ML: постановка задачи, признаки, функции потерь и обучение линейных моделей.",
+      "topics": [
+        "Задачи машинного обучения: классификация и регрессия",
+        "Матрица объект–признак; категориальные признаки, one-hot encoding и hash trick",
+        "Принцип максимального правдоподобия и метод наименьших квадратов",
+        "Линейная и логистическая регрессия; L1 и L2 регуляризация",
+        "Градиентный спуск и валидация моделей"
+      ],
+      "tags": [
+        "Линейные модели",
+        "Оптимизация",
+        "Регуляризация",
+        "Python"
+      ],
+      "source_ranges": [
+        [
+          10,
+          25
+        ]
+      ],
+      "practice": [
+        "Вводная лабораторная работа с данными организаций",
+        "Линейная регрессия, Titanic и подбор гиперпараметров"
+      ],
+      "note": "Вводный блок объединён по темам заметок и архивов. Даты отдельных занятий не указаны.",
+      "kind": "Вводный блок",
+      "period": "autumn",
+      "date_label": "Начало курса"
+    },
+    {
+      "id": "metrics",
+      "title": "Метрики классификации",
+      "date": null,
+      "module": "foundations",
+      "summary": "Как измерять качество классификатора и выбирать порог принятия решения.",
+      "topics": [
+        "Кредитный скоринг и порог принятия решения",
+        "Precision, recall, TPR и FPR",
+        "ROC-кривая и ROC AUC",
+        "F1 как гармоническое среднее precision и recall",
+        "Выбор порога по F1 и касательной к ROC"
+      ],
+      "tags": [
+        "Метрики",
+        "Классификация"
+      ],
+      "source_ranges": [
+        [
+          47,
+          56
+        ]
+      ],
+      "practice": [],
+      "note": "Дата занятия не записана. Блок расположен перед занятием о деревьях по порядку исходных заметок.",
+      "kind": "Занятие",
+      "period": "autumn",
+      "date_label": "До 21 октября"
+    },
+    {
+      "id": "trees",
+      "title": "Деревья и ансамбли",
+      "date": "2024-10-21",
+      "module": "foundations",
+      "summary": "От одного решающего дерева к Random Forest и градиентному бустингу.",
+      "topics": [
+        "Жадный алгоритм выбора сплита для регрессии и классификации",
+        "Дисперсия, энтропия и Gini impurity",
+        "Вывод критериев сплита из MSE и logloss",
+        "Бэггинг и гиперпараметры Random Forest",
+        "Градиентный бустинг и оптимизация ROC"
+      ],
+      "tags": [
+        "Деревья",
+        "Ансамбли",
+        "Метрики"
+      ],
+      "source_ranges": [
+        [
+          58,
+          61
+        ],
+        [
+          65,
+          107
+        ]
+      ],
+      "practice": [
+        "Вывести logloss и критерии качества сплита",
+        "Найти максимум энтропии методом множителей Лагранжа"
+      ],
+      "note": "",
+      "kind": "Занятие",
+      "period": "autumn",
+      "date_label": null
+    },
+    {
+      "id": "svd",
+      "title": "SVD и матричные разложения",
+      "date": "2024-10-28",
+      "module": "foundations",
+      "summary": "Сингулярное разложение, матрицы ранга 1 и их применение в рекомендациях и сжатии изображений.",
+      "topics": [
+        "Разложение матрицы на U, S и V",
+        "Свойства сингулярных векторов и сингулярных значений",
+        "Представление матрицы суммой матриц ранга 1",
+        "Выбор числа главных компонент",
+        "Рекомендательные системы и сжатие изображений"
+      ],
+      "tags": [
+        "Линейная алгебра",
+        "SVD"
+      ],
+      "source_ranges": [
+        [
+          206,
+          224
+        ],
+        [
+          337,
+          345
+        ]
+      ],
+      "practice": [
+        "Записать поэлементное выражение матрицы через SVD",
+        "Исследовать ранг матрицы exp(−(p−50)² − (q−50)²)"
+      ],
+      "note": "В позднем уточнении автор заменяет термин «факторизуемость» на «матрица ранга 1». Ссылки на записи стоят после программы; их тип не подписан.",
+      "kind": "Занятие",
+      "period": "autumn",
+      "date_label": null
+    },
+    {
+      "id": "assessment",
+      "title": "Промежуточная проверочная",
+      "date": "2024-10-31",
+      "module": "foundations",
+      "summary": "Программа повторения: определения, формулы и выводы по первой части курса.",
+      "topics": [
+        "Максимальное правдоподобие и вывод МНК",
+        "Линейная и логистическая регрессия; регуляризация",
+        "Метрики бинарной классификации и выбор порога",
+        "Энтропия, Gini impurity и критерии сплита",
+        "Бэггинг, Random Forest и градиентный бустинг"
+      ],
+      "tags": [
+        "Линейные модели",
+        "Метрики",
+        "Деревья",
+        "Ансамбли"
+      ],
+      "source_ranges": [
+        [
+          111,
+          203
+        ]
+      ],
+      "practice": [],
+      "note": "",
+      "kind": "Проверочная",
+      "period": "autumn",
+      "date_label": null
+    },
+    {
+      "id": "bayes",
+      "title": "Байес, гипотезы и эмбеддинги",
+      "date": "2024-11-04",
+      "module": "foundations",
+      "summary": "Вероятностный взгляд на данные: от доверительных интервалов до word2vec.",
+      "topics": [
+        "Доверительные интервалы и проверка статистических гипотез",
+        "Уровень доверия, мощность, ошибки I и II рода",
+        "Условная вероятность и формула Байеса",
+        "Классические и байесовские оценки; сопряжённые распределения",
+        "Наивный байесовский классификатор",
+        "Эмбеддинги и обучение word2vec"
+      ],
+      "tags": [
+        "Байес",
+        "Статистика",
+        "Эмбеддинги"
+      ],
+      "source_ranges": [
+        [
+          227,
+          256
+        ]
+      ],
+      "practice": [
+        "Задача о такси и надёжности свидетеля",
+        "Задача о редком заболевании и ложноположительном тесте",
+        "Вероятностная модель в PyMC"
+      ],
+      "note": "",
+      "kind": "Занятие",
+      "period": "autumn",
+      "date_label": null
+    },
+    {
+      "id": "neural-intro",
+      "title": "Введение в Deep Learning",
+      "date": "2024-11-11",
+      "module": "deep-learning",
+      "summary": "Связь знакомых моделей с нейросетями, обратное распространение ошибки и функции активации.",
+      "topics": [
+        "Параметрические и непараметрические методы",
+        "Связь линейных моделей, деревьев и ансамблей с нейросетями",
+        "Backpropagation и матричное дифференцирование",
+        "Функции активации и их свойства",
+        "Теорема универсальной аппроксимации"
+      ],
+      "tags": [
+        "Нейросети",
+        "Производные",
+        "PyTorch"
+      ],
+      "source_ranges": [
+        [
+          270,
+          297
+        ]
+      ],
+      "practice": [
+        "Вывести производную сигмоиды",
+        "Продифференцировать log(det(A)) по A",
+        "Выполнить PyTorch Basics"
+      ],
+      "note": "Конспект «Intro to DL 11.22.2023» добавлен как материал по теме, его дата отличается от даты занятия.",
+      "kind": "Занятие",
+      "period": "autumn",
+      "date_label": null
+    },
+    {
+      "id": "optimizer-notes",
+      "title": "Оптимизация: конспект",
+      "date": "2024-11-18",
+      "module": "deep-learning",
+      "summary": "Рукописные заметки об оптимизаторах, нормализации и регуляризации.",
+      "topics": [
+        "SGD, momentum и Nesterov",
+        "Adagrad, RMSProp и Adam",
+        "Нормализация данных и Batch Normalization",
+        "L1, L2 и dropout"
+      ],
+      "tags": [
+        "Оптимизация",
+        "Регуляризация"
+      ],
+      "source_ranges": [],
+      "practice": [],
+      "note": "Дата взята из имени PDF. В notes.md программа этой темы датирована 28 ноября; обе записи сохранены отдельно.",
+      "kind": "Конспект",
+      "period": "autumn",
+      "date_label": null
+    },
+    {
+      "id": "rnn",
+      "title": "Рекуррентные нейросети",
+      "date": "2024-11-25",
+      "module": "deep-learning",
+      "summary": "Как превратить последовательность произвольной длины в состояние сети и научить её генерировать текст.",
+      "topics": [
+        "Токены и обучаемые эмбеддинги",
+        "Скрытое состояние RNN и формулы прямого прохода",
+        "Датасет, функция потерь и обучение RNN",
+        "Инициализация состояния",
+        "Идея LSTM и отличия от RNN"
+      ],
+      "tags": [
+        "RNN",
+        "Эмбеддинги",
+        "Генерация текста"
+      ],
+      "source_ranges": [
+        [
+          348,
+          370
+        ]
+      ],
+      "practice": [
+        "Разобрать минимальную RNN Карпаты",
+        "Подготовить датасет географических названий"
+      ],
+      "note": "",
+      "kind": "Занятие",
+      "period": "autumn",
+      "date_label": null
+    },
+    {
+      "id": "optimizers",
+      "title": "Оптимизаторы и регуляризация",
+      "date": "2024-11-28",
+      "module": "deep-learning",
+      "summary": "Практические приёмы устойчивого обучения глубоких нейросетей.",
+      "topics": [
+        "Adagrad, Adadelta, RMSProp и Adam",
+        "Роль нормализации; Batch Normalization",
+        "L1 и L2 регуляризация; dropout",
+        "Многоклассовая классификация в PyTorch",
+        "Dataset, Compose, device и эпохи обучения"
+      ],
+      "tags": [
+        "Оптимизация",
+        "Регуляризация",
+        "PyTorch"
+      ],
+      "source_ranges": [
+        [
+          301,
+          333
+        ]
+      ],
+      "practice": [],
+      "note": "Дата программы указана в notes.md как 28 ноября. В архиве также есть конспект этой темы от 18 ноября. Записи ШАД за 30.11.2023 находятся в общей папке лекций.",
+      "kind": "Занятие",
+      "period": "autumn",
+      "date_label": null
+    },
+    {
+      "id": "derivatives",
+      "title": "Матричные производные",
+      "date": "2024-12-02",
+      "module": "deep-learning",
+      "summary": "Рукописный разбор производных и цепного правила для нескольких переменных.",
+      "topics": [
+        "Дифференциал и частные производные",
+        "Цепное правило",
+        "Матричное дифференцирование"
+      ],
+      "tags": [
+        "Производные",
+        "Линейная алгебра"
+      ],
+      "source_ranges": [
+        [
+          373,
+          379
+        ]
+      ],
+      "practice": [],
+      "note": "Дата взята из имени PDF, название и темы — из содержимого конспекта. Видео добавлено по теме из notes.md.",
+      "kind": "Конспект",
+      "period": "autumn",
+      "date_label": null
+    },
+    {
+      "id": "rnn-practice",
+      "title": "RNN: от формул к генерации",
+      "date": "2024-12-23",
+      "module": "deep-learning",
+      "summary": "Прямой и обратный проходы RNN, градиенты и подготовка генерации текста.",
+      "topics": [
+        "Матрицы RNN и их размерности",
+        "Backpropagation through time",
+        "Производные tanh и функции потерь по логитам",
+        "Adagrad и экспоненциальное сглаживание",
+        "Температура генерации и специальные символы"
+      ],
+      "tags": [
+        "RNN",
+        "Производные",
+        "Генерация текста"
+      ],
+      "source_ranges": [
+        [
+          382,
+          459
+        ]
+      ],
+      "practice": [
+        "Прочитать JSON Lines и построить словарь",
+        "Реализовать прямой и обратный проходы на NumPy",
+        "Домашняя работа: генерация стихов"
+      ],
+      "note": "Дата конспекта взята из имени PDF. Вопросы и домашняя работа привязаны по теме; собственная дата у них в заметках отсутствует.",
+      "kind": "Занятие",
+      "period": "autumn",
+      "date_label": null
+    },
+    {
+      "id": "dl-tricks",
+      "title": "Практика обучения нейросетей",
+      "date": "2025-02-03",
+      "module": "advanced",
+      "summary": "Начало весеннего семестра: приёмы обучения, аугментации и регуляризация.",
+      "topics": [
+        "Аугментация данных и подготовка модели",
+        "Организация цикла обучения и валидации",
+        "Оптимизаторы и регуляризация",
+        "Early stopping"
+      ],
+      "tags": [
+        "PyTorch",
+        "Оптимизация",
+        "Регуляризация"
+      ],
+      "source_ranges": [
+        [
+          465,
+          493
+        ]
+      ],
+      "practice": [
+        "Своими словами объяснить приёмы из программы 3 февраля",
+        "Пройти ноутбук Deep Learning tricks"
+      ],
+      "note": "Ноутбуки Deep Learning tricks сгруппированы с занятием по содержанию; дата самих ноутбуков не указана.",
+      "kind": "Занятие",
+      "period": "spring",
+      "date_label": null
+    },
+    {
+      "id": "feb-seminar",
+      "title": "Семинар 14 февраля",
+      "date": "2025-02-14",
+      "module": "advanced",
+      "summary": "Запись семинара из весеннего архива.",
+      "topics": [],
+      "tags": [],
+      "source_ranges": [
+        [
+          497,
+          497
+        ]
+      ],
+      "practice": [],
+      "note": "В исходных заметках есть дата и ссылка на запись, но тема семинара не подписана.",
+      "kind": "Семинар",
+      "period": "spring",
+      "date_label": null
+    },
+    {
+      "id": "transformers",
+      "title": "Attention и трансформеры",
+      "date": null,
+      "module": "advanced",
+      "summary": "Собираем Transformer на PyTorch и изучаем механизм внимания.",
+      "topics": [
+        "Scaled dot-product attention: Query, Key и Value",
+        "Multi-head attention и маскирование",
+        "Позиционное кодирование",
+        "Архитектура Transformer",
+        "Большие языковые модели: материалы для повторения"
+      ],
+      "tags": [
+        "Трансформеры",
+        "Attention",
+        "PyTorch"
+      ],
+      "source_ranges": [
+        [
+          504,
+          508
+        ],
+        [
+          536,
+          558
+        ]
+      ],
+      "practice": [
+        "Собрать Transformer в студенческом ноутбуке",
+        "Сопоставить решение с преподавательской версией"
+      ],
+      "note": "Точная дата занятия не указана. Материалы находятся в весенней части заметок.",
+      "kind": "Занятие",
+      "period": "spring",
+      "date_label": null
+    },
+    {
+      "id": "rl",
+      "title": "Обучение с подкреплением",
+      "date": null,
+      "module": "advanced",
+      "summary": "Лекция и практическое знакомство с интерфейсом среды Gymnasium.",
+      "topics": [
+        "Введение в Reinforcement Learning",
+        "Взаимодействие агента со средой",
+        "Интерфейс Gymnasium"
+      ],
+      "tags": [
+        "Reinforcement Learning",
+        "Python"
+      ],
+      "source_ranges": [
+        [
+          511,
+          511
+        ],
+        [
+          517,
+          522
+        ]
+      ],
+      "practice": [],
+      "note": "Точная дата занятия не указана.",
+      "kind": "Занятие",
+      "period": "spring",
+      "date_label": null
+    },
+    {
+      "id": "interpretation",
+      "title": "Интерпретация нейросетей",
+      "date": null,
+      "module": "advanced",
+      "summary": "Как исследовать поведение моделей и объяснять их предсказания.",
+      "topics": [
+        "Интерпретация моделей: от ML к DL",
+        "Интерпретация в компьютерном зрении",
+        "Интерпретация в NLP"
+      ],
+      "tags": [
+        "Интерпретация",
+        "Нейросети"
+      ],
+      "source_ranges": [
+        [
+          513,
+          514
+        ]
+      ],
+      "practice": [],
+      "note": "На слайдах указано 04.03.2025. Дата занятия в исходных заметках не указана.",
+      "kind": "Занятие",
+      "period": "spring",
+      "date_label": null
+    },
+    {
+      "id": "dev-tools",
+      "title": "Инструменты разработки",
+      "date": null,
+      "module": "advanced",
+      "summary": "Запись из заключительной части архива курса.",
+      "topics": [],
+      "tags": [],
+      "source_ranges": [
+        [
+          526,
+          531
+        ]
+      ],
+      "practice": [],
+      "note": "В notes.md указана только ссылка с названием. Дата и подробная программа не записаны.",
+      "kind": "Занятие",
+      "period": "spring",
+      "date_label": null
+    }
+  ],
+  "resources": [
+    {
+      "id": "intro-lab",
+      "title": "Лабораторная 1 · полный архив",
+      "path": "Lab 1 - intro.zip",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Ноутбуки и CSV-данные для вводной лабораторной."
+    },
+    {
+      "id": "basics-pack",
+      "title": "Практика по основам ML · архив",
+      "path": "pack_01.zip",
+      "class_ids": [
+        "intro",
+        "metrics"
+      ],
+      "description": "Python, Titanic, линейные модели, метрики и валидация."
+    },
+    {
+      "id": "linear-descent",
+      "title": "Линейная регрессия и градиентный спуск",
+      "path": "linear_descend.ipynb",
+      "class_ids": [
+        "intro"
+      ],
+      "description": ""
+    },
+    {
+      "id": "gradient-photo",
+      "title": "Градиентный спуск · формула и код",
+      "path": "photo_2024-11-01_20-41-12.jpg",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Привязка по содержимому изображения."
+    },
+    {
+      "id": "metrics-board",
+      "title": "Метрики и ансамбли · доска",
+      "path": "photo_2026-09-25_09-39-54.jpg",
+      "class_ids": [
+        "metrics",
+        "trees"
+      ],
+      "description": "Привязка по содержимому; дата фотографии не считается датой занятия."
+    },
+    {
+      "id": "trees-board",
+      "title": "Деревья и метрики · доска 21 октября",
+      "path": "photo_2024-10-21_07-59-04.jpg",
+      "class_ids": [
+        "trees"
+      ],
+      "description": ""
+    },
+    {
+      "id": "bayes-notes",
+      "title": "Конспект · 4 ноября",
+      "path": "Classwork 4 November.pdf",
+      "class_ids": [
+        "bayes"
+      ],
+      "description": ""
+    },
+    {
+      "id": "bayes-problems",
+      "title": "Использование формулы Байеса",
+      "path": "Использование формулы Байеса.pdf",
+      "class_ids": [
+        "bayes"
+      ],
+      "description": "Задачи о такси и диагностическом тесте с рукописными решениями."
+    },
+    {
+      "id": "bayes-visual",
+      "title": "Формула Байеса · наглядное доказательство",
+      "path": "visual_proof_byes.jpg",
+      "class_ids": [
+        "bayes"
+      ],
+      "description": ""
+    },
+    {
+      "id": "pymc",
+      "title": "Байесовская модель в PyMC",
+      "path": "pymc.ipynb",
+      "class_ids": [
+        "bayes"
+      ],
+      "description": ""
+    },
+    {
+      "id": "dl-intro-notes",
+      "title": "Введение в DL · конспект 2023 года",
+      "path": "Intro to DL 11.22.2023 .pdf",
+      "class_ids": [
+        "neural-intro"
+      ],
+      "description": ""
+    },
+    {
+      "id": "nov11-notes",
+      "title": "Конспект · 11 ноября",
+      "path": "Note 11 Nov 2024 (2).pdf",
+      "class_ids": [
+        "neural-intro"
+      ],
+      "description": ""
+    },
+    {
+      "id": "pytorch-basics",
+      "title": "PyTorch Basics · задания",
+      "path": "ML2_2024_auto_pytorch_basics_student.ipynb",
+      "class_ids": [
+        "neural-intro"
+      ],
+      "description": ""
+    },
+    {
+      "id": "pytorch-basics-copy",
+      "title": "PyTorch Basics · дополнительная копия",
+      "path": "ML2_2024_auto_pytorch_basics_student (2).ipynb",
+      "class_ids": [
+        "neural-intro"
+      ],
+      "description": "В исходной папке сохранены две версии ноутбука."
+    },
+    {
+      "id": "nov18-notes",
+      "title": "Оптимизаторы · конспект 18 ноября",
+      "path": "Note 18 Nov 2024 09_13_59.pdf",
+      "class_ids": [
+        "optimizer-notes",
+        "optimizers"
+      ],
+      "description": ""
+    },
+    {
+      "id": "dec02-notes",
+      "title": "Производные · конспект 2 декабря",
+      "path": "Note 2 Dec 2024 09_06_04.pdf",
+      "class_ids": [
+        "derivatives"
+      ],
+      "description": ""
+    },
+    {
+      "id": "dec23-notes",
+      "title": "RNN · конспект 23 декабря",
+      "path": "Note 23 Dec 2024 09_22_02.pdf",
+      "class_ids": [
+        "rnn-practice"
+      ],
+      "description": ""
+    },
+    {
+      "id": "heic-photo",
+      "title": "Deep Learning Tips & Tricks · доска",
+      "path": "IMG_2248 (2).heic",
+      "class_ids": [
+        "dl-tricks"
+      ],
+      "description": "Fine-tuning, transfer learning, дистилляция и learning rate scheduling. Привязка по содержимому; дата фотографии не установлена."
+    },
+    {
+      "id": "cnn-diagram",
+      "title": "Схема рецептивного поля",
+      "path": "photo_2026-09-27_17-03-39.jpg",
+      "class_ids": [],
+      "description": "Схема из архива; занятие не указано."
+    },
+    {
+      "id": "tricks-student",
+      "title": "Deep Learning tricks · задания",
+      "path": "sem3_dl_tricks_student_real.ipynb",
+      "class_ids": [
+        "dl-tricks"
+      ],
+      "description": ""
+    },
+    {
+      "id": "tricks-master",
+      "title": "Deep Learning tricks · решения",
+      "path": "sem3_dl_tricks_master_real.ipynb",
+      "class_ids": [
+        "dl-tricks"
+      ],
+      "description": ""
+    },
+    {
+      "id": "transformer-student",
+      "title": "Transformer с нуля · задания",
+      "path": "sem2_transformers_student.ipynb",
+      "class_ids": [
+        "transformers"
+      ],
+      "description": ""
+    },
+    {
+      "id": "transformer-master",
+      "title": "Transformer с нуля · решения",
+      "path": "sem2_transformers_master.ipynb",
+      "class_ids": [
+        "transformers"
+      ],
+      "description": ""
+    },
+    {
+      "id": "interpret-pdf",
+      "title": "Интерпретация нейросетей · слайды",
+      "path": "05_interpetation_lecture.pdf",
+      "class_ids": [
+        "interpretation"
+      ],
+      "description": ""
+    },
+    {
+      "id": "interpret-pptx",
+      "title": "Интерпретация нейросетей · презентация",
+      "path": "05_interpetation_lecture.pptx",
+      "class_ids": [
+        "interpretation"
+      ],
+      "description": ""
+    },
+    {
+      "id": "imagenet",
+      "title": "ImageNet · названия классов",
+      "path": "imgnet_classes.json",
+      "class_ids": [
+        "interpretation"
+      ],
+      "description": "Вспомогательный файл; привязан к теме по содержимому."
+    },
+    {
+      "id": "source-notes",
+      "title": "Программа и заметки · полный оригинал",
+      "path": "notes.md",
+      "class_ids": [],
+      "description": "Исходный документ с программой, вопросами, объявлениями и ссылками."
+    },
+    {
+      "id": "archive-92c325f198a6",
+      "title": "Вводная лабораторная · решения",
+      "archive": "Lab 1 - intro.zip",
+      "member": "Lab 1 - intro/autohw_intro_master_2023.ipynb",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива Lab 1 - intro.zip"
+    },
+    {
+      "id": "archive-6616a7aa4e29",
+      "title": "Вводная лабораторная · задания (externs)",
+      "archive": "Lab 1 - intro.zip",
+      "member": "Lab 1 - intro/autohw_intro_student_2023_externs.ipynb",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива Lab 1 - intro.zip"
+    },
+    {
+      "id": "archive-b52b6f44a574",
+      "title": "Вводная лабораторная · задания · data",
+      "archive": "Lab 1 - intro.zip",
+      "member": "Lab 1 - intro/data/autohw_intro_student_2023.ipynb",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива Lab 1 - intro.zip"
+    },
+    {
+      "id": "archive-2f2b50c7aaa9",
+      "title": "features.csv · data",
+      "archive": "Lab 1 - intro.zip",
+      "member": "Lab 1 - intro/data/features.csv",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива Lab 1 - intro.zip"
+    },
+    {
+      "id": "archive-c23c58e454c8",
+      "title": "organisations.csv · data",
+      "archive": "Lab 1 - intro.zip",
+      "member": "Lab 1 - intro/data/organisations.csv",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива Lab 1 - intro.zip"
+    },
+    {
+      "id": "archive-500aa91ca749",
+      "title": "rubrics.csv · data",
+      "archive": "Lab 1 - intro.zip",
+      "member": "Lab 1 - intro/data/rubrics.csv",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива Lab 1 - intro.zip"
+    },
+    {
+      "id": "archive-2889830f907f",
+      "title": "Вводная лабораторная · задания (externs) · data_externs",
+      "archive": "Lab 1 - intro.zip",
+      "member": "Lab 1 - intro/data_externs/autohw_intro_student_2023_externs.ipynb",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива Lab 1 - intro.zip"
+    },
+    {
+      "id": "archive-515dea54aaaf",
+      "title": "features.csv · data_externs",
+      "archive": "Lab 1 - intro.zip",
+      "member": "Lab 1 - intro/data_externs/features.csv",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива Lab 1 - intro.zip"
+    },
+    {
+      "id": "archive-11ac35b48518",
+      "title": "organisations.csv · data_externs",
+      "archive": "Lab 1 - intro.zip",
+      "member": "Lab 1 - intro/data_externs/organisations.csv",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива Lab 1 - intro.zip"
+    },
+    {
+      "id": "archive-f94ac182a046",
+      "title": "rubrics.csv · data_externs",
+      "archive": "Lab 1 - intro.zip",
+      "member": "Lab 1 - intro/data_externs/rubrics.csv",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива Lab 1 - intro.zip"
+    },
+    {
+      "id": "archive-c6eb63116f1a",
+      "title": "Логистическая регрессия и метрики",
+      "archive": "pack_01.zip",
+      "member": "pack_01/1._logreg_metrics.ipynb",
+      "class_ids": [
+        "metrics"
+      ],
+      "description": "Из архива pack_01.zip"
+    },
+    {
+      "id": "archive-b9a4d95f8712",
+      "title": "Краткий справочник Python",
+      "archive": "pack_01.zip",
+      "member": "pack_01/1_python_digest.ipynb",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива pack_01.zip"
+    },
+    {
+      "id": "archive-66ebcb5c6795",
+      "title": "Классификация на данных Titanic",
+      "archive": "pack_01.zip",
+      "member": "pack_01/2_titanik.ipynb",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива pack_01.zip"
+    },
+    {
+      "id": "archive-7611d717d43b",
+      "title": "Многоклассовая классификация в sklearn",
+      "archive": "pack_01.zip",
+      "member": "pack_01/2._Многоклассовая_классификация_в_sklearn.ipynb",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива pack_01.zip"
+    },
+    {
+      "id": "archive-e5ed30e2ecba",
+      "title": "Линейная регрессия в sklearn",
+      "archive": "pack_01.zip",
+      "member": "pack_01/3_linreg_sklearn.ipynb",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива pack_01.zip"
+    },
+    {
+      "id": "archive-7160816931df",
+      "title": "Валидация и гиперпараметры",
+      "archive": "pack_01.zip",
+      "member": "pack_01/3._validation_hyperparams.ipynb",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива pack_01.zip"
+    },
+    {
+      "id": "archive-ac18f4673d2d",
+      "title": "Регуляризация линейной регрессии",
+      "archive": "pack_01.zip",
+      "member": "pack_01/linreg_regularization.ipynb",
+      "class_ids": [
+        "intro"
+      ],
+      "description": "Из архива pack_01.zip"
+    },
+    {
+      "id": "lectures-folder",
+      "title": "Архив лекций и семинаров",
+      "url": "https://disk.yandex.ru/d/cweiLcy9ePRt7Q",
+      "class_ids": [],
+      "kind": "video",
+      "description": "Общая папка записей; для темы регуляризации см. записи от 30.11.2023."
+    },
+    {
+      "id": "handbook",
+      "title": "Учебник по машинному обучению · ШАД",
+      "url": "https://education.yandex.ru/handbook/ml",
+      "class_ids": [],
+      "kind": "link",
+      "description": ""
+    },
+    {
+      "id": "vorontsov",
+      "title": "Курс Константина Воронцова",
+      "url": "https://www.youtube.com/playlist?list=PLJOzdkh8T5krxc4HsHbB8g8f0hu7973fK",
+      "class_ids": [],
+      "kind": "video",
+      "description": ""
+    },
+    {
+      "id": "trees-lecture",
+      "title": "Лекция · ссылка перед программой 21 октября",
+      "url": "https://disk.yandex.ru/i/RegRiVkQ4pX27Q",
+      "class_ids": [
+        "trees"
+      ],
+      "kind": "video",
+      "description": "Привязка по расположению ссылки в notes.md."
+    },
+    {
+      "id": "trees-seminar",
+      "title": "Семинар · ссылка перед программой 21 октября",
+      "url": "https://disk.yandex.ru/i/0kqAD4Oji--IaA",
+      "class_ids": [
+        "trees"
+      ],
+      "kind": "video",
+      "description": "Привязка по расположению ссылки в notes.md."
+    },
+    {
+      "id": "svd-recording-1",
+      "title": "Материал к SVD · ссылка 1",
+      "url": "https://disk.yandex.ru/i/qjxtrhDmxXqNKA",
+      "class_ids": [
+        "svd"
+      ],
+      "kind": "link",
+      "description": "Тип материала в заметках не подписан."
+    },
+    {
+      "id": "svd-recording-2",
+      "title": "Материал к SVD · ссылка 2",
+      "url": "https://disk.yandex.ru/i/K5Qgx0V_GrUASg",
+      "class_ids": [
+        "svd"
+      ],
+      "kind": "link",
+      "description": "Тип материала в заметках не подписан."
+    },
+    {
+      "id": "habr",
+      "title": "Статья на Хабре · из заметок",
+      "url": "https://habr.com/ru/articles/855712/",
+      "class_ids": [],
+      "kind": "link",
+      "description": "Тема ссылки в исходном документе не подписана."
+    },
+    {
+      "id": "gini",
+      "title": "Gini impurity · разбор",
+      "url": "https://www.learndatasci.com/glossary/gini-impurity/",
+      "class_ids": [
+        "trees"
+      ],
+      "kind": "link",
+      "description": ""
+    },
+    {
+      "id": "girafe",
+      "title": "Лабораторные girafe-ai/ml-course",
+      "url": "https://github.com/girafe-ai/ml-course",
+      "class_ids": [
+        "neural-intro"
+      ],
+      "kind": "code",
+      "description": "В заметках упомянуты week_03_fineart_classification и intro_to_pytorch."
+    },
+    {
+      "id": "dropout",
+      "title": "Dropout и Batch Normalization · ноутбуки",
+      "url": "https://github.com/girafe-ai/ml-course/tree/master/week0_08_dropout_batchnorm",
+      "class_ids": [
+        "optimizers"
+      ],
+      "kind": "code",
+      "description": ""
+    },
+    {
+      "id": "rank-one",
+      "title": "Матрица ранга 1 как произведение векторов",
+      "url": "https://math.stackexchange.com/questions/1545118/a-rank-one-matrix-is-the-product-of-two-vectors",
+      "class_ids": [
+        "svd"
+      ],
+      "kind": "link",
+      "description": ""
+    },
+    {
+      "id": "rank-sum",
+      "title": "Разложение в сумму матриц ранга 1",
+      "url": "https://math.stackexchange.com/questions/1213411/how-to-represent-matrix-as-the-sum-of-rank-one-matrices",
+      "class_ids": [
+        "svd"
+      ],
+      "kind": "link",
+      "description": ""
+    },
+    {
+      "id": "svd-norm",
+      "title": "SVD и норма матрицы",
+      "url": "https://websites.uwlax.edu/twill/svd/norm/index.html",
+      "class_ids": [
+        "svd"
+      ],
+      "kind": "link",
+      "description": ""
+    },
+    {
+      "id": "svd-handbook",
+      "title": "Матричная факторизация · ШАД",
+      "url": "https://education.yandex.ru/handbook/ml/article/matrichnaya-faktorizaciya",
+      "class_ids": [
+        "svd"
+      ],
+      "kind": "link",
+      "description": ""
+    },
+    {
+      "id": "karpathy-rnn",
+      "title": "The Unreasonable Effectiveness of RNNs",
+      "url": "https://karpathy.github.io/2015/05/21/rnn-effectiveness/",
+      "class_ids": [
+        "rnn"
+      ],
+      "kind": "link",
+      "description": ""
+    },
+    {
+      "id": "karpathy-code",
+      "title": "Minimal character-level RNN · код",
+      "url": "https://gist.github.com/karpathy/d4dee566867f8291f086",
+      "class_ids": [
+        "rnn",
+        "rnn-practice"
+      ],
+      "kind": "code",
+      "description": ""
+    },
+    {
+      "id": "telegram",
+      "title": "Публикация из заметок к RNN",
+      "url": "https://t.me/ai_machinelearning_big_data/6206",
+      "class_ids": [
+        "rnn"
+      ],
+      "kind": "link",
+      "description": ""
+    },
+    {
+      "id": "rnn-data",
+      "title": "RNN · генерация географических названий",
+      "url": "https://github.com/tarstars/dl/blob/main/rnn/generate_text_00.ipynb",
+      "class_ids": [
+        "rnn",
+        "rnn-practice"
+      ],
+      "kind": "code",
+      "description": ""
+    },
+    {
+      "id": "matrix-video",
+      "title": "Матричное дифференцирование · объяснение",
+      "url": "https://youtu.be/aAAcBWyS_YI?si=3nbu29cu3M13a26J",
+      "class_ids": [
+        "derivatives"
+      ],
+      "kind": "video",
+      "description": ""
+    },
+    {
+      "id": "poetry",
+      "title": "Генерация стихов · домашняя работа",
+      "url": "https://github.com/girafe-ai/ml-course/blob/23s_dd_ml/homeworks/hw09_poetry/assignment_poetry.ipynb",
+      "class_ids": [
+        "rnn-practice"
+      ],
+      "kind": "code",
+      "description": ""
+    },
+    {
+      "id": "poetry-contest",
+      "title": "Генерация стихов · контест",
+      "url": "https://contest.yandex.ru/contest/73093/enter",
+      "class_ids": [
+        "rnn-practice"
+      ],
+      "kind": "link",
+      "description": ""
+    },
+    {
+      "id": "feb03-lecture",
+      "title": "Лекция к 3 февраля",
+      "url": "https://disk.yandex.ru/i/KRHqfKpbCXvmww",
+      "class_ids": [
+        "dl-tricks"
+      ],
+      "kind": "video",
+      "description": ""
+    },
+    {
+      "id": "feb03-seminar",
+      "title": "Семинар к 3 февраля",
+      "url": "https://disk.yandex.ru/i/fDTjaONcGQ5BUQ",
+      "class_ids": [
+        "dl-tricks"
+      ],
+      "kind": "video",
+      "description": ""
+    },
+    {
+      "id": "early-wiki",
+      "title": "Early stopping · справка",
+      "url": "https://en.wikipedia.org/wiki/Early_stopping",
+      "class_ids": [
+        "dl-tricks"
+      ],
+      "kind": "link",
+      "description": ""
+    },
+    {
+      "id": "early-medium",
+      "title": "Early stopping как регуляризация",
+      "url": "https://medium.com/@rahuljain13101999/why-early-stopping-works-as-regularization-b9f0a6c2772",
+      "class_ids": [
+        "dl-tricks"
+      ],
+      "kind": "link",
+      "description": ""
+    },
+    {
+      "id": "spring-program",
+      "title": "Весенняя программа и задание по терминам",
+      "url": "https://github.com/tarstars/dl/blob/main/spring_2025_ru.md",
+      "class_ids": [
+        "dl-tricks"
+      ],
+      "kind": "link",
+      "description": ""
+    },
+    {
+      "id": "feb14-video",
+      "title": "Запись семинара · 14 февраля 2025",
+      "url": "https://disk.yandex.ru/i/futDP5_fqSr8oA",
+      "class_ids": [
+        "feb-seminar"
+      ],
+      "kind": "video",
+      "description": ""
+    },
+    {
+      "id": "unknown-recording",
+      "title": "Материал из весенних заметок",
+      "url": "https://disk.yandex.ru/i/WQ6ceivbCDsK_Q",
+      "class_ids": [],
+      "kind": "link",
+      "description": "Ссылка без подписи; тема и дата не установлены."
+    },
+    {
+      "id": "transformers-video",
+      "title": "Семинар по трансформерам · запись",
+      "url": "https://disk.yandex.ru/i/L0px5-2cf_nkAQ",
+      "class_ids": [
+        "transformers"
+      ],
+      "kind": "video",
+      "description": ""
+    },
+    {
+      "id": "karpathy-channel",
+      "title": "Лекции Андрея Карпаты",
+      "url": "https://www.youtube.com/c/AndrejKarpathy",
+      "class_ids": [
+        "transformers"
+      ],
+      "kind": "video",
+      "description": ""
+    },
+    {
+      "id": "rl-video",
+      "title": "Обучение с подкреплением · лекция и семинар",
+      "url": "https://disk.yandex.ru/i/jnjkHbg3pyTjoA",
+      "class_ids": [
+        "rl"
+      ],
+      "kind": "video",
+      "description": ""
+    },
+    {
+      "id": "interpret-lecture",
+      "title": "Интерпретация нейросетей · лекция",
+      "url": "https://disk.yandex.ru/i/uJMRUWTJ8DAddQ",
+      "class_ids": [
+        "interpretation"
+      ],
+      "kind": "video",
+      "description": ""
+    },
+    {
+      "id": "interpret-seminar",
+      "title": "Интерпретация нейросетей · семинар",
+      "url": "https://disk.yandex.ru/i/Qlr4aRp86burzA",
+      "class_ids": [
+        "interpretation"
+      ],
+      "kind": "video",
+      "description": ""
+    },
+    {
+      "id": "rl-repo",
+      "title": "Practical RL · вводный семинар",
+      "url": "https://github.com/yandexdataschool/Practical_RL/tree/master/week01_intro",
+      "class_ids": [
+        "rl"
+      ],
+      "kind": "code",
+      "description": ""
+    },
+    {
+      "id": "rl-notebook",
+      "title": "Интерфейс Gymnasium · ноутбук",
+      "url": "https://github.com/yandexdataschool/Practical_RL/blob/master/week01_intro/seminar_gymnasium_interface.ipynb",
+      "class_ids": [
+        "rl"
+      ],
+      "kind": "code",
+      "description": ""
+    },
+    {
+      "id": "dev-video",
+      "title": "Инструменты разработки · запись",
+      "url": "https://disk.yandex.ru/i/VqhSElsdrdnkhA",
+      "class_ids": [
+        "dev-tools"
+      ],
+      "kind": "video",
+      "description": ""
+    },
+    {
+      "id": "transformer-cheatsheet",
+      "title": "Stanford CME 295 · шпаргалки по Transformer и LLM",
+      "url": "https://github.com/afshinea/stanford-cme-295-transformers-large-language-models",
+      "class_ids": [
+        "transformers"
+      ],
+      "kind": "link",
+      "description": ""
+    },
+    {
+      "id": "attention-shapes",
+      "title": "Multi-head attention · размерности тензоров",
+      "url": "https://github.com/rasbt/LLMs-from-scratch/discussions/595",
+      "class_ids": [
+        "transformers"
+      ],
+      "kind": "link",
+      "description": ""
+    },
+    {
+      "id": "stats-hogg",
+      "title": "Introduction to Mathematical Statistics · Hogg, McKean, Craig",
+      "path": "Introduction to Mathematical Statistics Eighth Edition.pdf",
+      "class_ids": [
+        "bayes"
+      ],
+      "description": "Учебник по математической статистике. Добавлен как справочный материал к теме; привязка по содержанию."
+    },
+    {
+      "id": "stats-wackerly",
+      "title": "Mathematical Statistics with Applications · Wackerly et al.",
+      "path": "Mathematical_Statistics_with_Applications_Dennis_D_Wackerly,_William.pdf",
+      "class_ids": [
+        "bayes"
+      ],
+      "description": "Учебник по математической статистике. Добавлен как справочный материал к теме; привязка по содержанию."
+    },
+    {
+      "id": "llm-analysis-book",
+      "title": "Анализ данных с LLM · И. Труммер",
+      "path": "Trummer_Analiz_dannyh_s_LLM_Tekst_tablicy_izobrazheniya_i_audio.epub",
+      "class_ids": [],
+      "description": "Текст, таблицы, изображения и аудио. Книга в формате EPUB; скачайте для чтения в приложении."
+    },
+    {
+      "id": "ai-agents-book",
+      "title": "AI Agents: The Definitive Guide · Nicole Koenigstein",
+      "path": "AI Agents_ The Definitive Guide.epub",
+      "class_ids": [],
+      "description": "Справочная книга об AI-агентах на английском языке. EPUB для скачивания."
+    },
+    {
+      "id": "agent-pipelines-book",
+      "title": "Агентные пайплайны · контроль, верификация и надёжность",
+      "path": "agentnye-paiplainy-uchebnik-kindle.epub",
+      "class_ids": [],
+      "description": "Антон / Астра. Дополнительная книга на русском языке. EPUB для скачивания."
+    }
+  ]
+}

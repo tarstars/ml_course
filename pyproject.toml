@@ -1,0 +1,18 @@
+[project]
+name = "ml-course-archive"
+version = "0.1.0"
+description = "A searchable, static archive of machine learning classes"
+requires-python = ">=3.11"
+dependencies = [
+  "markdown-it-py>=3.0,<5",
+  "bleach>=6.2,<7",
+  "pillow>=11,<13",
+  "pillow-heif>=1,<2",
+  "pymupdf>=1.25,<2",
+]
+
+[dependency-groups]
+dev = ["playwright>=1.50,<2"]
+
+[tool.uv]
+package = false

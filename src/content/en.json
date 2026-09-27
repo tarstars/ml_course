@@ -1,0 +1,644 @@
+{
+  "classes": {
+    "intro": {
+      "title": "Data and linear models",
+      "summary": "First steps in ML: defining a task, working with features, choosing a loss and training linear models.",
+      "topics": [
+        "Machine learning tasks: classification and regression",
+        "The feature matrix; categorical features, one-hot encoding and the hash trick",
+        "Maximum likelihood estimation and ordinary least squares",
+        "Linear and logistic regression; L1 and L2 regularization",
+        "Gradient descent and model validation"
+      ],
+      "practice": [
+        "Introductory lab using organization data",
+        "Linear regression, Titanic and hyperparameter selection"
+      ],
+      "note": "This introductory block groups material from the notes and archives by topic. Individual class dates are not recorded."
+    },
+    "metrics": {
+      "title": "Classification metrics",
+      "summary": "Measuring classifier performance and choosing a decision threshold.",
+      "topics": [
+        "Credit scoring and the decision threshold",
+        "Precision, recall, TPR and FPR",
+        "The ROC curve and ROC AUC",
+        "F1 as the harmonic mean of precision and recall",
+        "Choosing a threshold using F1 or a tangent to the ROC curve"
+      ],
+      "practice": [],
+      "note": "No class date is recorded. This block precedes decision trees in the original notes."
+    },
+    "trees": {
+      "title": "Decision trees and ensembles",
+      "summary": "From a single decision tree to Random Forest and gradient boosting.",
+      "topics": [
+        "Greedy split selection for regression and classification",
+        "Variance, entropy and Gini impurity",
+        "Deriving split criteria from MSE and log loss",
+        "Bagging and Random Forest hyperparameters",
+        "Gradient boosting and ROC optimization"
+      ],
+      "practice": [
+        "Derive log loss and the split quality criteria",
+        "Find the maximum entropy using Lagrange multipliers"
+      ],
+      "note": ""
+    },
+    "svd": {
+      "title": "SVD and matrix decomposition",
+      "summary": "Singular value decomposition, rank-one matrices and applications to recommendations and image compression.",
+      "topics": [
+        "Decomposing a matrix into U, S and V",
+        "Properties of singular vectors and singular values",
+        "Expressing a matrix as a sum of rank-one matrices",
+        "Choosing the number of principal components",
+        "Recommender systems and image compression"
+      ],
+      "practice": [
+        "Write the elementwise matrix expression using its SVD",
+        "Examine the rank of exp(−(p−50)² − (q−50)²)"
+      ],
+      "note": "A later correction replaces “factorizability” with “rank-one matrix.” Two resource links follow the syllabus, but their formats are not specified."
+    },
+    "assessment": {
+      "title": "Midterm assessment",
+      "summary": "Revision checklist: definitions, formulas and derivations from the first part of the course.",
+      "topics": [
+        "Maximum likelihood and the derivation of ordinary least squares",
+        "Linear and logistic regression; regularization",
+        "Binary classification metrics and threshold selection",
+        "Entropy, Gini impurity and split criteria",
+        "Bagging, Random Forest and gradient boosting"
+      ],
+      "practice": [],
+      "note": ""
+    },
+    "bayes": {
+      "title": "Bayes, hypotheses and embeddings",
+      "summary": "A probabilistic view of data, from confidence intervals to word2vec.",
+      "topics": [
+        "Confidence intervals and statistical hypothesis testing",
+        "Confidence level, power, and Type I and Type II errors",
+        "Conditional probability and Bayes’ theorem",
+        "Frequentist and Bayesian estimates; conjugate distributions",
+        "The naive Bayes classifier",
+        "Embeddings and training word2vec"
+      ],
+      "practice": [
+        "The taxi problem and witness reliability",
+        "The rare disease problem and false positive tests",
+        "Build a probabilistic model in PyMC"
+      ],
+      "note": ""
+    },
+    "neural-intro": {
+      "title": "Introduction to Deep Learning",
+      "summary": "Connecting familiar models to neural networks, backpropagation and activation functions.",
+      "topics": [
+        "Parametric and nonparametric methods",
+        "How linear models, trees and ensembles relate to neural networks",
+        "Backpropagation and matrix differentiation",
+        "Activation functions and their properties",
+        "The universal approximation theorem"
+      ],
+      "practice": [
+        "Derive the sigmoid derivative",
+        "Differentiate log(det(A)) with respect to A",
+        "Complete the PyTorch Basics lab"
+      ],
+      "note": "“Intro to DL 11.22.2023” is included as related reading; its date differs from the class date."
+    },
+    "optimizer-notes": {
+      "title": "Optimization: handwritten notes",
+      "summary": "Handwritten notes on optimizers, normalization and regularization.",
+      "topics": [
+        "SGD, momentum and Nesterov acceleration",
+        "Adagrad, RMSProp and Adam",
+        "Data normalization and Batch Normalization",
+        "L1, L2 and dropout"
+      ],
+      "practice": [],
+      "note": "The date comes from the PDF filename. The syllabus in notes.md dates this topic to November 28; both records are preserved."
+    },
+    "rnn": {
+      "title": "Recurrent neural networks",
+      "summary": "Representing a variable-length sequence as a network state and learning to generate text.",
+      "topics": [
+        "Tokens and trainable embeddings",
+        "The hidden state of an RNN and forward-pass equations",
+        "The dataset, loss function and RNN training",
+        "Initializing the hidden state",
+        "The idea behind LSTM and how it differs from RNN"
+      ],
+      "practice": [
+        "Study Karpathy’s minimal RNN",
+        "Prepare a dataset of geographical names"
+      ],
+      "note": ""
+    },
+    "optimizers": {
+      "title": "Optimizers and regularization",
+      "summary": "Practical techniques for stable training of deep neural networks.",
+      "topics": [
+        "Adagrad, Adadelta, RMSProp and Adam",
+        "The role of normalization; Batch Normalization",
+        "L1 and L2 regularization; dropout",
+        "Multiclass classification in PyTorch",
+        "Dataset, Compose, device and training epochs"
+      ],
+      "practice": [],
+      "note": "The syllabus in notes.md says November 28. The archive also has notes on this topic dated November 18. The Yandex School of Data Analysis recordings from November 30, 2023 are in the shared lecture folder."
+    },
+    "derivatives": {
+      "title": "Matrix derivatives",
+      "summary": "Handwritten explanations of derivatives and the multivariable chain rule.",
+      "topics": [
+        "Differentials and partial derivatives",
+        "The chain rule",
+        "Matrix differentiation"
+      ],
+      "practice": [],
+      "note": "The date comes from the PDF filename; the title and topics come from its contents. A related video from notes.md is included."
+    },
+    "rnn-practice": {
+      "title": "RNN: from equations to generation",
+      "summary": "Forward and backward passes, gradients and preparation for text generation.",
+      "topics": [
+        "RNN matrices and their shapes",
+        "Backpropagation through time",
+        "Derivatives of tanh and the loss with respect to logits",
+        "Adagrad and exponential smoothing",
+        "Generation temperature and special tokens"
+      ],
+      "practice": [
+        "Read JSON Lines and build a vocabulary",
+        "Implement the forward and backward passes in NumPy",
+        "Homework: generate poetry"
+      ],
+      "note": "The date comes from the PDF filename. The questions and homework are grouped by topic; they have no separate date in the notes."
+    },
+    "dl-tricks": {
+      "title": "Neural network training in practice",
+      "summary": "The spring semester begins with training techniques, augmentation and regularization.",
+      "topics": [
+        "Data augmentation and model setup",
+        "Organizing the training and validation loops",
+        "Optimizers and regularization",
+        "Early stopping"
+      ],
+      "practice": [
+        "Explain the techniques from the February 3 syllabus in your own words",
+        "Work through the Deep Learning tricks notebook"
+      ],
+      "note": "The Deep Learning tricks notebooks are grouped with this class by content; the notebooks themselves are undated."
+    },
+    "feb-seminar": {
+      "title": "February 14 seminar",
+      "summary": "A seminar recording from the spring archive.",
+      "topics": [],
+      "practice": [],
+      "note": "The original notes provide a date and a recording link, but do not name the seminar topic."
+    },
+    "transformers": {
+      "title": "Attention and Transformers",
+      "summary": "Building a Transformer in PyTorch and exploring the attention mechanism.",
+      "topics": [
+        "Scaled dot-product attention: Query, Key and Value",
+        "Multi-head attention and masking",
+        "Positional encoding",
+        "The Transformer architecture",
+        "Large language models: revision resources"
+      ],
+      "practice": [
+        "Build a Transformer in the student notebook",
+        "Compare your implementation with the instructor’s version"
+      ],
+      "note": "The exact class date is not recorded. These resources appear in the spring section of the notes."
+    },
+    "rl": {
+      "title": "Reinforcement learning",
+      "summary": "A lecture and a practical introduction to the Gymnasium environment interface.",
+      "topics": [
+        "Introduction to Reinforcement Learning",
+        "Agent–environment interaction",
+        "The Gymnasium interface"
+      ],
+      "practice": [],
+      "note": "The exact class date is not recorded."
+    },
+    "interpretation": {
+      "title": "Interpreting neural networks",
+      "summary": "Investigating model behavior and explaining predictions.",
+      "topics": [
+        "Model interpretation: from ML to DL",
+        "Interpretation in computer vision",
+        "Interpretation in NLP"
+      ],
+      "practice": [],
+      "note": "The slides are dated March 4, 2025. The original notes do not specify the class date."
+    },
+    "dev-tools": {
+      "title": "Development tools",
+      "summary": "A recording from the final part of the course archive.",
+      "topics": [],
+      "practice": [],
+      "note": "notes.md contains only a titled link. The date and detailed syllabus are not recorded."
+    }
+  },
+  "resources": {
+    "intro-lab": {
+      "title": "Lab 1 · complete archive",
+      "description": "Notebooks and CSV datasets for the introductory lab."
+    },
+    "basics-pack": {
+      "title": "ML fundamentals · practice archive",
+      "description": "Python, Titanic, linear models, metrics and validation."
+    },
+    "linear-descent": {
+      "title": "Linear regression and gradient descent",
+      "description": ""
+    },
+    "gradient-photo": {
+      "title": "Gradient descent · equations and code",
+      "description": "Grouped by image content."
+    },
+    "metrics-board": {
+      "title": "Metrics and ensembles · blackboard",
+      "description": "Grouped by content; the photo date is not used as the class date."
+    },
+    "trees-board": {
+      "title": "Trees and metrics · October 21 blackboard",
+      "description": ""
+    },
+    "bayes-notes": {
+      "title": "Class notes · November 4",
+      "description": ""
+    },
+    "bayes-problems": {
+      "title": "Applying Bayes’ theorem",
+      "description": "The taxi and diagnostic test problems with handwritten solutions."
+    },
+    "bayes-visual": {
+      "title": "Bayes’ theorem · visual proof",
+      "description": ""
+    },
+    "pymc": {
+      "title": "A Bayesian model in PyMC",
+      "description": ""
+    },
+    "dl-intro-notes": {
+      "title": "Introduction to DL · 2023 notes",
+      "description": ""
+    },
+    "nov11-notes": {
+      "title": "Class notes · November 11",
+      "description": ""
+    },
+    "pytorch-basics": {
+      "title": "PyTorch Basics · exercises",
+      "description": ""
+    },
+    "pytorch-basics-copy": {
+      "title": "PyTorch Basics · additional copy",
+      "description": "Two versions of this notebook were present in the original folder."
+    },
+    "nov18-notes": {
+      "title": "Optimizers · November 18 notes",
+      "description": ""
+    },
+    "dec02-notes": {
+      "title": "Derivatives · December 2 notes",
+      "description": ""
+    },
+    "dec23-notes": {
+      "title": "RNN · December 23 notes",
+      "description": ""
+    },
+    "heic-photo": {
+      "title": "Deep Learning Tips & Tricks · blackboard",
+      "description": "Fine-tuning, transfer learning, distillation and learning rate scheduling. Grouped by content; the photo date is unknown."
+    },
+    "cnn-diagram": {
+      "title": "Receptive field diagram",
+      "description": "A diagram from the archive; no class is specified."
+    },
+    "tricks-student": {
+      "title": "Deep Learning tricks · exercises",
+      "description": ""
+    },
+    "tricks-master": {
+      "title": "Deep Learning tricks · solutions",
+      "description": ""
+    },
+    "transformer-student": {
+      "title": "Transformer from scratch · exercises",
+      "description": ""
+    },
+    "transformer-master": {
+      "title": "Transformer from scratch · solutions",
+      "description": ""
+    },
+    "interpret-pdf": {
+      "title": "Interpreting neural networks · slides",
+      "description": ""
+    },
+    "interpret-pptx": {
+      "title": "Interpreting neural networks · presentation",
+      "description": ""
+    },
+    "imagenet": {
+      "title": "ImageNet · class names",
+      "description": "A supporting file, grouped by its contents."
+    },
+    "source-notes": {
+      "title": "Course syllabus and notes · complete original",
+      "description": "The original document with the syllabus, questions, announcements and links."
+    },
+    "archive-92c325f198a6": {
+      "title": "Introductory lab · solutions",
+      "description": "From Lab 1 - intro.zip"
+    },
+    "archive-6616a7aa4e29": {
+      "title": "Introductory lab · exercises (externs)",
+      "description": "From Lab 1 - intro.zip"
+    },
+    "archive-b52b6f44a574": {
+      "title": "Introductory lab · exercises · data",
+      "description": "From Lab 1 - intro.zip"
+    },
+    "archive-2f2b50c7aaa9": {
+      "title": "features.csv · data",
+      "description": "From Lab 1 - intro.zip"
+    },
+    "archive-c23c58e454c8": {
+      "title": "organisations.csv · data",
+      "description": "From Lab 1 - intro.zip"
+    },
+    "archive-500aa91ca749": {
+      "title": "rubrics.csv · data",
+      "description": "From Lab 1 - intro.zip"
+    },
+    "archive-2889830f907f": {
+      "title": "Introductory lab · exercises (externs) · data_externs",
+      "description": "From Lab 1 - intro.zip"
+    },
+    "archive-515dea54aaaf": {
+      "title": "features.csv · data_externs",
+      "description": "From Lab 1 - intro.zip"
+    },
+    "archive-11ac35b48518": {
+      "title": "organisations.csv · data_externs",
+      "description": "From Lab 1 - intro.zip"
+    },
+    "archive-f94ac182a046": {
+      "title": "rubrics.csv · data_externs",
+      "description": "From Lab 1 - intro.zip"
+    },
+    "archive-c6eb63116f1a": {
+      "title": "Logistic regression and metrics",
+      "description": "From pack_01.zip"
+    },
+    "archive-b9a4d95f8712": {
+      "title": "Python quick reference",
+      "description": "From pack_01.zip"
+    },
+    "archive-66ebcb5c6795": {
+      "title": "Classification on the Titanic dataset",
+      "description": "From pack_01.zip"
+    },
+    "archive-7611d717d43b": {
+      "title": "Multiclass classification in sklearn",
+      "description": "From pack_01.zip"
+    },
+    "archive-e5ed30e2ecba": {
+      "title": "Linear regression in sklearn",
+      "description": "From pack_01.zip"
+    },
+    "archive-7160816931df": {
+      "title": "Validation and hyperparameters",
+      "description": "From pack_01.zip"
+    },
+    "archive-ac18f4673d2d": {
+      "title": "Linear regression regularization",
+      "description": "From pack_01.zip"
+    },
+    "lectures-folder": {
+      "title": "Lecture and seminar archive",
+      "description": "Shared recordings folder; for regularization, see the November 30, 2023 recordings."
+    },
+    "handbook": {
+      "title": "Machine Learning Handbook · Yandex SDA",
+      "description": ""
+    },
+    "vorontsov": {
+      "title": "Konstantin Vorontsov’s course",
+      "description": ""
+    },
+    "trees-lecture": {
+      "title": "Lecture · link before the October 21 syllabus",
+      "description": "Grouped by the location of this link in notes.md."
+    },
+    "trees-seminar": {
+      "title": "Seminar · link before the October 21 syllabus",
+      "description": "Grouped by the location of this link in notes.md."
+    },
+    "svd-recording-1": {
+      "title": "SVD resource · link 1",
+      "description": "The resource format is not specified in the notes."
+    },
+    "svd-recording-2": {
+      "title": "SVD resource · link 2",
+      "description": "The resource format is not specified in the notes."
+    },
+    "habr": {
+      "title": "Habr article · from the notes",
+      "description": "The topic of this link is not specified in the original document."
+    },
+    "gini": {
+      "title": "Gini impurity · explanation",
+      "description": ""
+    },
+    "girafe": {
+      "title": "Labs from girafe-ai/ml-course",
+      "description": "The notes mention week_03_fineart_classification and intro_to_pytorch."
+    },
+    "dropout": {
+      "title": "Dropout and Batch Normalization · notebooks",
+      "description": ""
+    },
+    "rank-one": {
+      "title": "A rank-one matrix as a product of vectors",
+      "description": ""
+    },
+    "rank-sum": {
+      "title": "Decomposition into a sum of rank-one matrices",
+      "description": ""
+    },
+    "svd-norm": {
+      "title": "SVD and matrix norms",
+      "description": ""
+    },
+    "svd-handbook": {
+      "title": "Matrix factorization · Yandex SDA",
+      "description": ""
+    },
+    "karpathy-rnn": {
+      "title": "The Unreasonable Effectiveness of RNNs",
+      "description": ""
+    },
+    "karpathy-code": {
+      "title": "Minimal character-level RNN · code",
+      "description": ""
+    },
+    "telegram": {
+      "title": "A post from the RNN notes",
+      "description": ""
+    },
+    "rnn-data": {
+      "title": "RNN · generating geographical names",
+      "description": ""
+    },
+    "matrix-video": {
+      "title": "Matrix differentiation · explanation",
+      "description": ""
+    },
+    "poetry": {
+      "title": "Poetry generation · homework",
+      "description": ""
+    },
+    "poetry-contest": {
+      "title": "Poetry generation · contest",
+      "description": ""
+    },
+    "feb03-lecture": {
+      "title": "Lecture for February 3",
+      "description": ""
+    },
+    "feb03-seminar": {
+      "title": "Seminar for February 3",
+      "description": ""
+    },
+    "early-wiki": {
+      "title": "Early stopping · reference",
+      "description": ""
+    },
+    "early-medium": {
+      "title": "Early stopping as regularization",
+      "description": ""
+    },
+    "spring-program": {
+      "title": "Spring syllabus and terminology assignment",
+      "description": ""
+    },
+    "feb14-video": {
+      "title": "Seminar recording · February 14, 2025",
+      "description": ""
+    },
+    "unknown-recording": {
+      "title": "A resource from the spring notes",
+      "description": "An unlabeled link; its topic and date have not been established."
+    },
+    "transformers-video": {
+      "title": "Transformer seminar · recording",
+      "description": ""
+    },
+    "karpathy-channel": {
+      "title": "Andrej Karpathy’s lectures",
+      "description": ""
+    },
+    "rl-video": {
+      "title": "Reinforcement learning · lecture and seminar",
+      "description": ""
+    },
+    "interpret-lecture": {
+      "title": "Interpreting neural networks · lecture",
+      "description": ""
+    },
+    "interpret-seminar": {
+      "title": "Interpreting neural networks · seminar",
+      "description": ""
+    },
+    "rl-repo": {
+      "title": "Practical RL · introductory seminar",
+      "description": ""
+    },
+    "rl-notebook": {
+      "title": "The Gymnasium interface · notebook",
+      "description": ""
+    },
+    "dev-video": {
+      "title": "Development tools · recording",
+      "description": ""
+    },
+    "transformer-cheatsheet": {
+      "title": "Stanford CME 295 · Transformer and LLM cheatsheets",
+      "description": ""
+    },
+    "attention-shapes": {
+      "title": "Multi-head attention · tensor shapes",
+      "description": ""
+    },
+    "stats-hogg": {
+      "title": "Introduction to Mathematical Statistics · Hogg, McKean, Craig",
+      "description": "A mathematical statistics textbook, included as a reference by topic."
+    },
+    "stats-wackerly": {
+      "title": "Mathematical Statistics with Applications · Wackerly et al.",
+      "description": "A mathematical statistics textbook, included as a reference by topic."
+    },
+    "llm-analysis-book": {
+      "title": "Data analysis with LLMs · I. Trummer",
+      "description": "Text, tables, images and audio. An EPUB book; download to read in an ebook app."
+    },
+    "ai-agents-book": {
+      "title": "AI Agents: The Definitive Guide · Nicole Koenigstein",
+      "description": "An English-language reference on AI agents. Downloadable EPUB."
+    },
+    "agent-pipelines-book": {
+      "title": "Agent pipelines · control, verification and reliability",
+      "description": "Anton / Astra. Additional reading in Russian. Downloadable EPUB."
+    }
+  },
+  "topics": {
+    "Линейные модели": "Linear models",
+    "Оптимизация": "Optimization",
+    "Регуляризация": "Regularization",
+    "Python": "Python",
+    "Метрики": "Metrics",
+    "Классификация": "Classification",
+    "Деревья": "Decision trees",
+    "Ансамбли": "Ensembles",
+    "Линейная алгебра": "Linear algebra",
+    "SVD": "SVD",
+    "Байес": "Bayesian methods",
+    "Статистика": "Statistics",
+    "Эмбеддинги": "Embeddings",
+    "Нейросети": "Neural networks",
+    "Производные": "Derivatives",
+    "PyTorch": "PyTorch",
+    "RNN": "RNN",
+    "Генерация текста": "Text generation",
+    "Трансформеры": "Transformers",
+    "Attention": "Attention",
+    "Reinforcement Learning": "Reinforcement Learning",
+    "Интерпретация": "Interpretability"
+  },
+  "modules": {
+    "foundations": {
+      "title": "Machine learning fundamentals",
+      "short": "ML fundamentals",
+      "description": "From data and linear models to ensembles and Bayesian methods."
+    },
+    "deep-learning": {
+      "title": "Deep learning",
+      "short": "Deep Learning",
+      "description": "Neural networks, optimization, matrix derivatives and recurrent models."
+    },
+    "advanced": {
+      "title": "Modern architectures",
+      "short": "Advanced topics",
+      "description": "Training practice, Transformers, reinforcement learning and interpretability."
+    }
+  }
+}
