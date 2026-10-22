@@ -19,6 +19,9 @@
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   const fmt = (v) => !Number.isFinite(v) ? v === Infinity ? "∞" : "—"
     : v === 0 ? "0" : Math.abs(v) < 0.001 || Math.abs(v) >= 10000 ? v.toExponential(3) : Number(v.toPrecision(4)).toString();
+  const subscript = (value) => String(value).replace(/\d/g, (digit) => "₀₁₂₃₄₅₆₇₈₉"[+digit]);
+  const superscript = (value) => String(value).replace(/\d/g, (digit) => "⁰¹²³⁴⁵⁶⁷⁸⁹"[+digit]);
+  const polynomialFeature = (degree) => degree === 0 ? "1" : degree === 1 ? "x" : `x${superscript(degree)}`;
   const truthValue = (name, x) => name === "sine" ? 0.8 * Math.sin(Math.PI * x)
     : name === "parabola" ? 1.7 * x * x - 0.65 : 0.75 * x + 0.15;
   function preset(name) {
@@ -89,7 +92,7 @@
     let plotWidth = 720, plotHeight = 420;
     const complexity = () => state.degrees[state.basis];
     const labels = () => state.basis === "polynomial"
-      ? Array.from({ length: complexity() + 1 }, (_, j) => j === 0 ? "1" : j === 1 ? "x" : `x^${j}`)
+      ? Array.from({ length: complexity() + 1 }, (_, j) => polynomialFeature(j))
       : ["1", ...Array.from({ length: complexity() }, (_, j) => [`sin(${j + 1}πx)`, `cos(${j + 1}πx)`]).flat()];
     let result, frame = 0, gesture = null, disposed = false, previousPresentation;
     const plot = $("#lr-plot");
@@ -181,7 +184,9 @@
         ? Number(state.lambda.toPrecision(4)).toExponential() : Number(state.lambda.toPrecision(6));
       $("#lr-lambda-range").value = Math.log10(state.lambda || 1e-6);
       for (const id of ["#lr-lambda", "#lr-lambda-range", '[data-lr-action="zero"]']) $(id).disabled = state.regularization === "none";
-      $("#lr-model").textContent = fourier ? `ŷ = θ₀ + Σₖ₌₁…${degree} [θ₂ₖ₋₁ sin(kπx) + θ₂ₖ cos(kπx)]` : degree === 0 ? "ŷ = θ₀" : `ŷ = θ₀ + ${degree === 1 ? "θ₁x" : `θ₁x + … + θ${degree}x^${degree}`}`;
+      const terms = degree <= 4 ? Array.from({ length: degree + 1 }, (_, j) => j) : [0, 1, null, degree];
+      $("#lr-model").textContent = fourier ? `ŷ = θ₀ + Σₖ₌₁…${degree} [θ₂ₖ₋₁ sin(kπx) + θ₂ₖ cos(kπx)]`
+        : "ŷ = " + terms.map((j) => j === null ? "…" : `θ${subscript(j)}${j ? polynomialFeature(j) : ""}`).join(" + ");
       if (fourier && degree === 0) $("#lr-model").textContent = "ŷ = θ₀";
       root.querySelectorAll("[data-lr-tool]").forEach((el) => el.setAttribute("aria-pressed", String(el.dataset.lrTool === state.tool)));
       $("#lr-uniform").checked = state.uniform;
