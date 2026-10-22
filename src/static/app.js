@@ -316,6 +316,7 @@ function notFound() {
 }
 function render(preserveFocus = false) {
   if (!course) return;
+  window.MLRegressionLab.unmount();
   const activeId = document.activeElement.id;
   const selection =
     document.activeElement instanceof HTMLInputElement
@@ -326,10 +327,17 @@ function render(preserveFocus = false) {
       timeline: "Хронология",
       topics: "Темы курса",
       library: "Библиотека",
+      regression: "Лаборатория регрессии",
       class: byClass[state.id]?.title || "Занятие",
     }[state.view] || "Не найдено";
   $("#app").innerHTML = (
-    { timeline, topics, library, class: classDetail }[state.view] || notFound
+    {
+      timeline,
+      topics,
+      library,
+      class: classDetail,
+      regression: () => window.MLRegressionLab.html(language),
+    }[state.view] || notFound
   )();
   $("#breadcrumb-current").textContent = title;
   document.title = `${t(title)} · Machine Learning`;
@@ -352,6 +360,8 @@ function render(preserveFocus = false) {
       el.setSelectionRange(selection, selection);
   }
   window.ML_TRANSLATE(document.body, language);
+  if (state.view === "regression")
+    window.MLRegressionLab.mount($("#regression-lab"), language);
   $("#announcement").textContent =
     $(".results-toolbar")?.textContent || t(title);
 }

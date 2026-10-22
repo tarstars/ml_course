@@ -1,4 +1,5 @@
 window.ML_UI_EN = {
+  "Лаборатория регрессии": "Regression lab",
   "Книга": "Book",
   "К содержимому": "Skip to content",
   "Навигация по курсу": "Course navigation",

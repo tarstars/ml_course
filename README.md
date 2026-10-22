@@ -9,6 +9,7 @@ A bilingual Russian / English website for the 2024–2025 course, published at
 - **Library:** searchable PDFs, photos, notebooks, recordings, links, archives, datasets, and downloadable EPUB books.
 - **Readers:** PDF/image previews, browser-compatible HEIC copies, notebook code and saved outputs, and locally rendered mathematical formulas. Notebooks are never executed by the build or the site.
 - **Languages:** translated navigation and catalog content, with a persistent RU/EN switch and shareable language-specific links. Original attached documents retain their original language.
+- **Regression lab:** a browser-only polynomial/Fourier regression playground with editable points, freehand drawing, L1/L2 regularization, live matrices, coefficients, and diagnostics. Open `#regression?lang=en` or use the sidebar.
 
 ## Local use
 
@@ -36,6 +37,9 @@ src/
     app.js                 # Routes, filtering, search, previews
     i18n.js                # UI translations and language preferences
     reader.js              # Language switching in document readers
+    regression-math.js     # SVD least squares, ridge, coordinate-descent lasso
+    regression-lab.js      # Interactive plot, point editing, live matrix panels
+    regression-lab.css     # Responsive regression lab styles
     style.css              # Responsive layouts
     vendor/mathjax/        # Pinned MathJax 3.2.2 and its license
 .github/workflows/pages.yml # Build and Pages deployment on main
@@ -97,7 +101,19 @@ uv run playwright install chromium
 uv run python src/check_site.py --url http://127.0.0.1:8000/
 ```
 
+Check the lab's numerical implementation against analytic fixtures with Node.js:
+
+```bash
+node src/check_regression.cjs
+```
+
 Use `--browser /usr/bin/google-chrome` to use an existing Chrome installation. Checks cover both languages, search/filtering, navigation, modal previews, notebook rendering, mobile overflow, and all generated local resource links. External course links are preserved from the notes and are not downloaded or checked for availability by the build.
+
+The regression lab uses a fixed domain `x ∈ [-1, 1]`, `y ∈ [-1.5, 1.5]` and up to 200 observations / 21 coefficients. Polynomial degree `d` gives `d + 1` coefficients; `K` Fourier harmonics (period 2) give `2K + 1`. Features are displayed and fitted without standardization. The loss is `||Xθ − Y||² / (2n)`, with either `λ Σ|θj|` or `(λ/2) Σθj²` for `j ≥ 1`; the intercept is unpenalized. Singular unregularized fits use the minimum-norm solution. Lasso reports if its convergence limit is reached.
+
+Freehand drawing appends observations at uneven x-coordinates by default. The **Uniform x-grid + replace painted interval** toggle instead samples at `Δx = 0.04` and replaces observations in the drawn interval. Undo/redo operates on complete point-editing gestures. The lab also provides keyboard-editable coordinates, linked point/matrix highlighting, residuals, reproducible presets, and paginated matrices that use every observation in the fit.
+
+The lab opens in **Lecture view** for classroom TVs and projectors: full-width layout, high contrast, 32 px matrix values and coefficients, and plot labels that retain their size as the chart resizes. The graph stays beside a live panel with **θ**, **X/Y** (five observations per page), and **XᵀX** tabs. The determinant of the original `XᵀX` is pinned above the tabs and updates during drawing and dragging. The coordinate editor is below the workspace. **Text size** increases the numbers to 40 px or 48 px; the preference is saved in the browser. Turn Lecture view off to restore the course navigation.
 
 ## GitHub Pages
 
