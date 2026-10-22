@@ -2,17 +2,41 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import unquote, urlsplit
+from urllib.parse import parse_qs, unquote, urlsplit
 
 from playwright.sync_api import expect, sync_playwright
 
 ROOT = Path(__file__).resolve().parent.parent
 
 
+class AssetLinks(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.urls = []
+
+    def handle_starttag(self, tag, attrs):
+        attributes = dict(attrs)
+        url = attributes.get("src") if tag == "script" else attributes.get("href") if tag == "link" else None
+        if url and "assets/" in url and urlsplit(url).path.endswith((".js", ".css")):
+            self.urls.append(url)
+
+
 def check_files():
     dist = ROOT / "dist"
+    for page in [dist / "index.html", *(dist / "readers").glob("*.html")]:
+        parser = AssetLinks()
+        parser.feed(page.read_text())
+        assert parser.urls, page
+        for url in parser.urls:
+            parts = urlsplit(url)
+            asset = (page.parent / unquote(parts.path)).resolve()
+            assert asset.is_relative_to(dist / "assets"), (page, url)
+            expected = hashlib.sha256(asset.read_bytes()).hexdigest()[:12]
+            assert parse_qs(parts.query).get("v") == [expected], (page, url)
     catalog = json.loads((dist / "data/course.json").read_text())
     for resource in catalog["resources"]:
         for key in ("url", "download_url", "thumbnail"):
@@ -25,7 +49,7 @@ def check_files():
     for section in ("classes", "modules", "resources"):
         for record in catalog[section]:
             assert record["translations"]["en"]["title"], record["id"]
-    print(f"PASS: every local resource link and all {len(catalog['resources'])} resource translations")
+    print(f"PASS: content-versioned JS/CSS on every page, every local resource link and all {len(catalog['resources'])} resource translations")
     return catalog
 
 

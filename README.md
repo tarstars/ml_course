@@ -119,6 +119,8 @@ The lab opens in **Lecture view** for classroom TVs and projectors: full-width l
 
 The workflow follows GitHub's [custom Pages workflow](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages). The repository's **Settings → Pages → Source** must be **GitHub Actions**. Changes pushed to `main` rebuild and publish `dist/`. All asset URLs are relative, so the `/ml_course/` project path works without a special base URL.
 
+The build adds a content hash to JavaScript and stylesheet URLs in the site shell and document readers. Updated pages therefore load matching assets even when a visitor has an older script or stylesheet cached.
+
 ## Adding a backend later
 
 The browser fetches one versioned catalog from `data/course.json`. The generated contract includes stable entity IDs, translated fields, resource URLs, and many-to-many class/resource relationships. A backend can initially serve the same shape from an API, then add authenticated editing and file storage without changing the browsing model. `src/content` is the present source of truth; generated resource sizes, thumbnails, and reader URLs are added by the build.

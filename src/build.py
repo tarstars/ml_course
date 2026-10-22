@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import base64
 import copy
+import hashlib
 import html
 import io
 import json
@@ -11,7 +12,7 @@ from pathlib import Path
 import re
 import shutil
 import zipfile
-from urllib.parse import quote, urlsplit
+from urllib.parse import quote, unquote, urlsplit
 
 import bleach
 from markdown_it import MarkdownIt
@@ -52,6 +53,21 @@ def markdown(text: str) -> str:
 
 def write(path: Path, content: str):
     path.parent.mkdir(parents=True, exist_ok=True)
+    if path.suffix == ".html":
+        def version_asset(match: re.Match) -> str:
+            url = match["url"]
+            asset = (path.parent / unquote(url)).resolve()
+            if not asset.is_relative_to((DIST / "assets").resolve()) or not asset.is_file():
+                raise ValueError(f"Missing or unsafe asset: {url}")
+            version = hashlib.sha256(asset.read_bytes()).hexdigest()[:12]
+            return f'{match["attribute"]}="{url}?v={version}"'
+
+        # A deployment must not combine new HTML with a cached older router.
+        content = re.sub(
+            r'(?P<attribute>\b(?:src|href))="(?P<url>(?:\.\./)?assets/[^"?#]+\.(?:js|css))"',
+            version_asset,
+            content,
+        )
     path.write_text(content, encoding="utf-8")
 
 
