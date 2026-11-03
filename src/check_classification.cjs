@@ -103,4 +103,28 @@ assert.equal(embarked.collinear, false);
 assert.ok(embarked.weights.every(Number.isFinite) && Number.isFinite(embarked.intercept));
 // L1 at the weakest penalty with the collinear columns still converges within the outer cap.
 assert.equal(M.fit(D.train.X, D.train.y, { penalty: "l1", lambda: 1e-3, columns: [...active, column("family_size")] }).converged, true);
-console.log("PASS: closed-form fit, intercept only, L2 optimality, L1 KKT and exact zeros, separation, constant and collinear columns, minimum-norm solve, reference reproduction, shipped edge cases");
+// Confusion, metrics, ROC, losses, histogram and density helpers.
+const s10 = [0.9, 0.8, 0.7, 0.6, 0.55, 0.4, 0.3, 0.2, 0.1, 0.05], y10 = [1, 1, 0, 1, 0, 1, 0, 0, 1, 0];
+assert.deepEqual(M.confusion(s10, y10, 0.5), { tp: 3, fn: 2, fp: 2, tn: 3 });
+const m = M.metrics({ tp: 3, fn: 2, fp: 2, tn: 3 });
+["accuracy", "precision", "recall", "specificity", "f1", "balancedAccuracy", "npv"].forEach((k) => close(m[k], 0.6, 1e-12));
+close(m.fpr, 0.4, 1e-12); close(m.fnr, 0.4, 1e-12); close(m.mcc, 0.2, 1e-12); close(m.youdenJ, 0.2, 1e-12);
+const nothing = M.metrics({ tp: 0, fn: 5, fp: 0, tn: 5 });
+assert.equal(nothing.precision, null); assert.equal(nothing.f1, null); close(nothing.specificity, 1, 1e-12);
+assert.deepEqual(M.confusion(s10, y10, 0.95), { tp: 0, fn: 5, fp: 0, tn: 5 });
+close(M.roc([0.1, 0.5, 0.5, 0.9], [0, 0, 1, 1]).auc, 0.875, 1e-12);
+close(M.roc([0.1, 0.2, 0.8, 0.9], [0, 0, 1, 1]).auc, 1, 1e-12);
+close(M.roc([0.9, 0.8, 0.2, 0.1], [0, 0, 1, 1]).auc, 0, 1e-12);
+close(M.roc([3, 3, 3, 3], [0, 1, 0, 1]).auc, 0.5, 1e-12);                   // intercept-only model
+const curve = M.roc(s10, y10).points;
+assert.deepEqual([curve[0].fpr, curve[0].tpr, curve.at(-1).fpr, curve.at(-1).tpr], [0, 0, 1, 1]);
+curve.slice(1).forEach((p, i) => assert.ok(p.fpr >= curve[i].fpr && p.tpr >= curve[i].tpr));
+close(M.logLoss([0.5, 0.5], [0, 1]), Math.log(2), 1e-12); close(M.brier([0.5, 1], [0, 1]), 0.125, 1e-12);
+assert.deepEqual(M.histogram([0, 0.5, 1, 1, 2.5], [0, 1, 2]), [2, 2]);           // 2.5 ignored, 1 goes to the second bin
+const grid = Array.from({ length: 401 }, (_, i) => -10 + i * 0.05);
+const dens = M.kde([-1, 0, 1, 0.5, -0.5], grid, M.silverman([-1, 0, 1, 0.5, -0.5]));
+close(dens.reduce((a, b) => a + b) * 0.05, 1, 1e-2);
+const unit = Array.from({ length: 201 }, (_, i) => i / 200);
+const near0 = M.kde([0.01, 0.02, 0.05, 0.03, 0.04], unit, 0.05, [0, 1]);
+close(near0.reduce((a, b) => a + b) * 0.005 - (near0[0] + near0.at(-1)) * 0.0025, 1, 2e-2);    // mass stays inside [0, 1]
+console.log("PASS: closed-form fit, intercept only, L2 optimality, L1 KKT and exact zeros, separation, constant and collinear columns, minimum-norm solve, reference reproduction, shipped edge cases, confusion matrix, metrics with null denominators, ROC and AUC, log loss and Brier, histogram, Silverman bandwidth and reflected KDE");

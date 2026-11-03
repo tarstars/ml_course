@@ -250,7 +250,111 @@
   const scores = (X, weights, intercept) => X.map((row) => intercept + dot(row, weights));
   const probabilities = (logits) => logits.map(sigmoid);
 
-  const api = { sigmoid, logit, solveSymmetric, fit, scores, probabilities };
+  function confusion(scoreList, y, threshold) {
+    const c = { tp: 0, fn: 0, fp: 0, tn: 0 };
+    scoreList.forEach((s, i) => {
+      const positive = s >= threshold;
+      if (y[i] === 1) c[positive ? "tp" : "fn"] += 1;
+      else c[positive ? "fp" : "tn"] += 1;
+    });
+    return c;
+  }
+
+  const ratio = (num, den) => (den === 0 ? null : num / den);
+
+  function metrics(c) {
+    const { tp, fn, fp, tn } = c;
+    const precision = ratio(tp, tp + fp);
+    const recall = ratio(tp, tp + fn);
+    const specificity = ratio(tn, tn + fp);
+    const fpr = ratio(fp, fp + tn);
+    const fnr = ratio(fn, fn + tp);
+    const both = (a, b, f) => (a === null || b === null ? null : f(a, b));
+    const f1 = both(precision, recall, (p, r) => (p + r === 0 ? null : (2 * p * r) / (p + r)));
+    const root = Math.sqrt((tp + fp) * (tp + fn) * (tn + fp) * (tn + fn));
+    return {
+      accuracy: ratio(tp + tn, tp + fn + fp + tn),
+      precision,
+      recall,
+      specificity,
+      fpr,
+      fnr,
+      f1,
+      balancedAccuracy: both(recall, specificity, (r, s) => (r + s) / 2),
+      mcc: root === 0 ? null : (tp * tn - fp * fn) / root,
+      youdenJ: both(recall, fpr, (r, f) => r - f),
+      npv: ratio(tn, tn + fn),
+    };
+  }
+
+  function roc(scoreList, y) {
+    const positives = y.reduce((a, v) => a + (v === 1 ? 1 : 0), 0);
+    const negatives = y.length - positives;
+    const start = { fpr: 0, tpr: 0, threshold: Infinity };
+    if (positives === 0 || negatives === 0) return { points: [start, { fpr: 1, tpr: 1, threshold: -Infinity }], auc: 0.5 };
+    const order = scoreList.map((s, i) => i).sort((a, b) => scoreList[b] - scoreList[a]);
+    const points = [start];
+    let tp = 0, fp = 0;
+    for (let k = 0; k < order.length; k++) {
+      const i = order[k];
+      if (y[i] === 1) tp += 1; else fp += 1;
+      if (k + 1 === order.length || scoreList[order[k + 1]] !== scoreList[i]) {
+        points.push({ fpr: fp / negatives, tpr: tp / positives, threshold: scoreList[i] });
+      }
+    }
+    let auc = 0;
+    for (let k = 1; k < points.length; k++) auc += ((points[k].fpr - points[k - 1].fpr) * (points[k].tpr + points[k - 1].tpr)) / 2;
+    return { points, auc };
+  }
+
+  const mean = (values) => values.reduce((a, b) => a + b, 0) / values.length;
+  const logLoss = (p, y) => mean(p.map((v, i) => {
+    const q = Math.min(1 - 1e-15, Math.max(1e-15, v));
+    return -(y[i] * Math.log(q) + (1 - y[i]) * Math.log(1 - q));
+  }));
+  const brier = (p, y) => mean(p.map((v, i) => (v - y[i]) ** 2));
+
+  function histogram(values, edges) {
+    const bins = edges.length - 1;
+    const counts = zeros(bins);
+    const last = edges[bins];
+    values.forEach((v) => {
+      if (!(v >= edges[0] && v <= last)) return;
+      if (v === last) { counts[bins - 1] += 1; return; }
+      let lo = 0, hi = bins - 1;
+      while (lo < hi) {
+        const mid = (lo + hi + 1) >> 1;
+        if (edges[mid] <= v) lo = mid; else hi = mid - 1;
+      }
+      counts[lo] += 1;
+    });
+    return counts;
+  }
+
+  function silverman(values) {
+    const n = values.length;
+    if (n < 2) return 1e-3;
+    const mu = mean(values);
+    const sd = Math.sqrt(values.reduce((a, v) => a + (v - mu) ** 2, 0) / n);
+    const sorted = [...values].sort((a, b) => a - b);
+    const quantile = (q) => {
+      const pos = q * (n - 1), lo = Math.floor(pos);
+      return sorted[lo] + (pos - lo) * ((sorted[Math.min(lo + 1, n - 1)]) - sorted[lo]);
+    };
+    const iqr = quantile(0.75) - quantile(0.25);
+    const scale = Math.pow(n, -0.2);
+    const h = iqr === 0 ? sd * scale : 0.9 * Math.min(sd, iqr / 1.34) * scale;
+    return h > 0 ? h : 1e-3;
+  }
+
+  function kde(values, grid, bandwidth, bounds) {
+    if (values.length === 0) return grid.map(() => 0);
+    const points = bounds ? values.flatMap((v) => [v, 2 * bounds[0] - v, 2 * bounds[1] - v]) : values;
+    const norm = 1 / (values.length * bandwidth * Math.sqrt(2 * Math.PI));
+    return grid.map((x) => norm * points.reduce((sum, v) => sum + Math.exp(-0.5 * ((x - v) / bandwidth) ** 2), 0));
+  }
+
+  const api = { sigmoid, logit, solveSymmetric, fit, scores, probabilities, confusion, metrics, roc, logLoss, brier, histogram, silverman, kde };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.MLClassificationMath = api;
 })(typeof window !== "undefined" ? window : globalThis);
