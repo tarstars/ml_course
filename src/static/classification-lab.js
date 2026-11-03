@@ -12,12 +12,19 @@
     textScale: ["1", "1.25", "1.5"].includes(preference("ml-regression-text-scale", "1"))
       ? +preference("ml-regression-text-scale", "1") : 1,
   });
+  // The switched-on feature groups are filled in on the first mount, so a missing data asset breaks only this lab.
   const state = {
-    on: new Set(D.groups.filter((group) => group.default_on).map((group) => group.id)),
+    on: null,
     penalty: "l2", lambda: 1, axis: "probability", threshold: 0.5, split: "train",
     ...preferences(),
   };
   let teardown = () => {};
+  // The data asset and the math and plot modules load as separate scripts; without any of them the lab shows a note.
+  const ready = () => Boolean(D?.groups && M && P);
+  // The lab heading: eyebrow, title and the text under it, then whatever sits beside them.
+  const heading = (w, text, aside = "") => `<div class="cl-heading"><div><p class="eyebrow">${w("INTERACTIVE LAB / 02", "ИНТЕРАКТИВНАЯ ЛАБОРАТОРИЯ / 02")}</p>
+      <h1 id="cl-title">${w("Classification metrics", "Метрики классификации")}</h1>
+      ${text}</div>${aside}</div>`;
   const esc = (value) => String(value).replace(/[&<>"']/g, (c) =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
   const fmt = (value) => value === 0 ? "0" : value.toFixed(3);
@@ -45,7 +52,8 @@
 
   const SPLITS = ["train", "test"];
   const other = (split) => split === "train" ? "test" : "train";
-  // The metric table in display order: key, name, formula, one-line hint (EN, RU).
+  // The metric table in display order: key, name, formula, one-line hint (EN, RU). Soft hyphens (\u00AD) in the
+  // longest Russian words let the tables fit a 320 px phone; wider screens never break there.
   const METRICS = [
     ["accuracy", ["Accuracy", "Доля верных ответов (accuracy)"], "(TP + TN) / n", ["Share of all passengers the model classifies correctly.", "Доля пассажиров, для которых предсказание верно."]],
     ["precision", ["Precision", "Точность (precision)"], "TP / (TP + FP)", ["Of the passengers predicted to survive, the share who did.", "Среди предсказанных выживших — доля действительно выживших."]],
@@ -54,7 +62,7 @@
     ["fpr", ["False positive rate (FPR)", "Доля ложных срабатываний (FPR)"], "FP / (FP + TN)", ["Of the passengers who died, the share wrongly predicted to survive.", "Среди погибших — доля, ошибочно предсказанных выжившими."]],
     ["fnr", ["False negative rate (FNR)", "Доля пропусков (FNR)"], "FN / (FN + TP)", ["Of the passengers who survived, the share the model misses.", "Среди выживших — доля, которую модель пропускает."]],
     ["f1", ["F1 score", "F1-мера"], "2·P·R / (P + R)", ["Harmonic mean of precision and recall; low if either is low.", "Гармоническое среднее точности и полноты; мало, если мала хотя бы одна."]],
-    ["balancedAccuracy", ["Balanced accuracy", "Сбалансированная доля верных ответов"], "(TPR + TNR) / 2", ["Mean of recall and specificity, so the larger class does not dominate.", "Среднее полноты и специфичности: больший класс не перевешивает."]],
+    ["balancedAccuracy", ["Balanced accuracy", "Сбаланси\u00ADрованная доля верных ответов"], "(TPR + TNR) / 2", ["Mean of recall and specificity, so the larger class does not dominate.", "Среднее полноты и специфичности: больший класс не перевешивает."]],
     ["mcc", ["Matthews correlation (MCC)", "Корреляция Мэтьюса (MCC)"], "(TP·TN − FP·FN) / √(…)", ["Correlation between predicted and actual classes, from −1 to 1.", "Корреляция предсказанных и настоящих классов, от −1 до 1."]],
     ["youdenJ", ["Youden's J", "Индекс Юдена (J)"], "TPR − FPR", ["Height of the operating point above the ROC diagonal.", "Высота рабочей точки над диагональю ROC."]],
     ["npv", ["Negative predictive value (NPV)", "Точность отрицательных ответов (NPV)"], "TN / (TN + FN)", ["Of the passengers predicted to die, the share who did.", "Среди предсказанных погибших — доля действительно погибших."]],
@@ -78,13 +86,13 @@
         <div class="cl-card-heading"><h2 id="cl-confusion-title">03 · ${w("Confusion matrix and metrics", "Матрица ошибок и метрики")}</h2></div>
         <div class="cl-confusion-layout">
           <div class="cl-table-scroll cl-matrix-block"><table id="cl-confusion" class="cl-confusion"><caption id="cl-confusion-caption"></caption>
-            <thead><tr><td></td><th scope="col">${w("Predicted survived", "Предсказано: выжил")}</th><th scope="col">${w("Predicted died", "Предсказано: погиб")}</th><th scope="col">${w("Total", "Всего")}</th></tr></thead>
+            <thead><tr><td></td><th scope="col">${w("Predicted survived", "Предска\u00ADзано: выжил")}</th><th scope="col">${w("Predicted died", "Предска\u00ADзано: погиб")}</th><th scope="col">${w("Total", "Всего")}</th></tr></thead>
             <tbody><tr><th scope="row">${w("Actually survived", "На самом деле: выжил")}</th>${cell("tp")}${cell("fn")}<td id="cl-actual-positive" class="cl-total"></td></tr>
             <tr><th scope="row">${w("Actually died", "На самом деле: погиб")}</th>${cell("fp")}${cell("tn")}<td id="cl-actual-negative" class="cl-total"></td></tr></tbody>
             <tfoot><tr><th scope="row">${w("Total", "Всего")}</th><td id="cl-predicted-positive" class="cl-total"></td><td id="cl-predicted-negative" class="cl-total"></td><td id="cl-n" class="cl-total"></td></tr></tfoot>
           </table></div>
           <div class="cl-table-scroll cl-metrics-block"><table id="cl-metrics" class="cl-metrics">
-            <thead><tr><th scope="col">${w("Metric", "Метрика")}</th><th scope="col">${w("Formula", "Формула")}</th><th scope="col" id="cl-metrics-primary" class="cl-value-heading"></th><th scope="col" id="cl-metrics-secondary" class="cl-value-heading"></th></tr></thead>
+            <thead><tr><th scope="col">${w("Metric", "Метрика")}</th><th scope="col" class="cl-formula-heading">${w("Formula", "Формула")}</th><th scope="col" id="cl-metrics-primary" class="cl-value-heading"></th><th scope="col" id="cl-metrics-secondary" class="cl-value-heading"></th></tr></thead>
             <tbody>${rows}</tbody>
           </table></div>
         </div>
@@ -106,14 +114,16 @@
 
   function html(language) {
     const w = (en, ru) => language === "en" ? en : ru;
+    if (!ready()) return `<section id="classification-lab" class="cl-lab" aria-labelledby="cl-title">
+      ${heading(w, `<p class="cl-status cl-warning" role="alert">${w("The lab's data or scripts failed to load. Reload the page to try again.", "Не удалось загрузить данные или скрипты лаборатории. Обновите страницу, чтобы попробовать снова.")}</p>`)}
+    </section>`;
     const groups = D.groups.map((group) => {
       const note = esc(w(group.note.en, group.note.ru));
       return `<label class="cl-group" title="${note}"><input type="checkbox" data-cl-group="${group.id}" aria-labelledby="cl-group-${group.id}" aria-describedby="cl-hint-${group.id}"><span><span class="cl-group-name" id="cl-group-${group.id}">${esc(w(group.label.en, group.label.ru))}</span><span class="cl-hint" id="cl-hint-${group.id}">${note}</span></span></label>`;
     }).join("");
     return `<section id="classification-lab" class="cl-lab" aria-labelledby="cl-title">
-      <div class="cl-heading"><div><p class="eyebrow">${w("INTERACTIVE LAB / 02", "ИНТЕРАКТИВНАЯ ЛАБОРАТОРИЯ / 02")}</p>
-      <h1 id="cl-title">${w("Classification metrics", "Метрики классификации")}</h1>
-      <p class="page-description">${w("Switch features on and off, pick a penalty, then move the threshold and watch every metric respond.", "Включайте признаки, выбирайте штраф, двигайте порог и смотрите, как отвечают метрики.")}</p></div><div class="cl-presentation-controls"><label><input id="cl-presentation" type="checkbox"> ${w("Lecture view", "Для лекции")}</label><label for="cl-text-size">${w("Text size", "Размер текста")}</label><select id="cl-text-size"><option value="1">100%</option><option value="1.25">125%</option><option value="1.5">150%</option></select></div></div>
+      ${heading(w, `<p class="page-description">${w("Switch features on and off, pick a penalty, then move the threshold and watch every metric respond.", "Включайте признаки, выбирайте штраф, двигайте порог и смотрите, как отвечают метрики.")}</p><p class="cl-live"><span class="status-dot"></span> ${w("ALL IN YOUR BROWSER", "ВСЁ В ВАШЕМ БРАУЗЕРЕ")}</p>`,
+        `<div class="cl-presentation-controls"><label><input id="cl-presentation" type="checkbox"> ${w("Lecture view", "Для лекции")}</label><label for="cl-text-size">${w("Text size", "Размер текста")}</label><select id="cl-text-size"><option value="1">100%</option><option value="1.25">125%</option><option value="1.5">150%</option></select></div>`)}
       <div class="cl-flow" aria-label="${w("Learning steps", "Этапы")}"><span>01 ${w("Model", "Модель")}</span><b>→</b><span>02 ${w("Scores", "Оценки")}</span><b>→</b><span>03 ${w("Confusion matrix", "Матрица ошибок")}</span><b>→</b><span>04 ROC</span></div>
       <section class="cl-card" id="cl-model-card" aria-labelledby="cl-model-title">
         <div class="cl-card-heading"><h2 id="cl-model-title">01 · ${w("Model", "Модель")}</h2><span class="cl-badge" id="cl-fit-summary"></span></div>
@@ -142,6 +152,8 @@
   }
 
   function mount(root, language) {
+    if (!root || !ready()) return;
+    state.on ??= new Set(D.groups.filter((group) => group.default_on).map((group) => group.id));
     const w = (en, ru) => language === "en" ? en : ru;
     const $ = (selector) => root.querySelector(selector);
     const controller = new AbortController();
@@ -153,10 +165,14 @@
       return { key, primary: row.querySelector(".cl-primary"), secondary: row.querySelector(".cl-secondary") };
     });
     const splitName = (split) => split === "train" ? w("Train", "Обучение") : w("Test", "Тест");
-    // Two decimals; the Russian text uses a decimal comma.
-    const number = (value) => {
-      const text = (Math.abs(value) < 0.005 ? 0 : value).toFixed(2);
-      return language === "en" ? text : text.replace(".", ",");
+    // Two decimals with a decimal point in both languages, like every other number in the lab.
+    const number = (value) => (Math.abs(value) < 0.005 ? 0 : value).toFixed(2);
+    // A metric cell; an undefined value (0 / 0) shows "—" with a hint in its title.
+    const undefinedHint = w("Undefined (0 / 0)", "Не определено (0 / 0)");
+    const fillMetric = (td, value) => {
+      td.textContent = metricText(value);
+      if (value === null) td.title = undefinedHint;
+      else td.removeAttribute("title");
     };
     let columns = [], model, logits, probabilities, logitRange, fixed, classes = null, frame = 0, thresholdFrame = 0, drag = null;
     // --cl-plot-font is a size on screen, but the plots draw in viewBox units: divide it by each SVG's scale.
@@ -222,7 +238,9 @@
         const dependent = names(collinearColumns(columns.filter((j) => !model.constant.includes(j))));
         notes.push(w(`${dependent} are collinear: without a penalty their coefficients are not unique; predictions and metrics still are.`, `${dependent} коллинеарны: без штрафа их коэффициенты не единственны, а предсказания и метрики единственны.`));
       }
-      $("#cl-status").textContent = notes.join(" · ");
+      // An unchanged note is not rewritten, so dragging λ does not re-announce it.
+      const text = notes.join(" · ");
+      if ($("#cl-status").textContent !== text) $("#cl-status").textContent = text;
       $("#cl-status").classList.toggle("cl-warning", model.separated || model.collinear);
     }
     const range = () => state.axis === "logit" ? logitRange : [0, 1];
@@ -287,8 +305,8 @@
       $("#cl-metrics-primary").textContent = splitName(state.split);
       $("#cl-metrics-secondary").textContent = splitName(other(state.split));
       for (const cell of metricCells) {
-        cell.primary.textContent = metricText(primary[cell.key]);
-        cell.secondary.textContent = metricText(secondary[cell.key]);
+        fillMetric(cell.primary, primary[cell.key]);
+        fillMetric(cell.secondary, secondary[cell.key]);
       }
     }
     function rocCard(counts) {
@@ -346,6 +364,7 @@
       document.body.classList.toggle("lr-presenting", state.presentation);
       root.classList.toggle("cl-presentation", state.presentation);
       root.style.setProperty("--cl-text-scale", state.textScale);
+      root.dataset.clTextScale = String(state.textScale);
       root.style.setProperty("--cl-plot-font", `${(state.presentation ? 26 : 20) * state.textScale}px`);
       $("#cl-presentation").checked = state.presentation;
       $("#cl-text-size").value = String(state.textScale);
@@ -357,12 +376,17 @@
       const { x } = new DOMPoint(event.clientX, event.clientY).matrixTransform(plot.getScreenCTM().inverse());
       return Math.min(hi, Math.max(lo, P.scale([lo, hi], P.plotBox("distribution", fonts.get(plot))).value(x)));
     }
+    // The plot lets the page scroll vertically under a finger (touch-action: pan-y); the browser then cancels
+    // the pointer. So a touch moves the threshold only when it moves or lifts, and a cancel puts it back.
+    let dragStart = state.threshold;
     listen("pointerdown", (event) => {
       if (event.button !== 0 || drag !== null) return;
       event.preventDefault();
       plot.focus({ preventScroll: true });
       plot.setPointerCapture(event.pointerId);
       drag = event.pointerId;
+      dragStart = state.threshold;
+      if (event.pointerType === "touch") return;
       moveTo(pointerValue(event));
       renderThreshold();
     }, plot);
@@ -371,7 +395,19 @@
       moveTo(pointerValue(event));
       scheduleThreshold();
     }, plot);
-    for (const type of ["pointerup", "pointercancel", "lostpointercapture"]) listen(type, (event) => {
+    listen("pointerup", (event) => {
+      if (event.pointerId !== drag) return;
+      drag = null;
+      moveTo(pointerValue(event));
+      renderThreshold();
+    }, plot);
+    listen("pointercancel", (event) => {
+      if (event.pointerId !== drag) return;
+      drag = null;
+      state.threshold = dragStart;
+      renderThreshold();
+    }, plot);
+    listen("lostpointercapture", (event) => {
       if (event.pointerId !== drag) return;
       drag = null;
       if (thresholdFrame) renderThreshold();

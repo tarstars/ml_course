@@ -311,13 +311,19 @@ function classDetail() {
   const resources = c.resource_ids.map((id) => byResource[id]);
   return `<a class="back-link" href="#timeline">← К хронологии</a><section class="detail-heading"><div class="detail-meta">${moduleBadge(c)}<span>${e(dateText(c))}</span><span>${e(c.kind)}</span></div><h1>${e(c.title)}</h1><p class="page-description">${e(c.summary)}</p><div class="tags">${c.tags.map(tagLink).join("")}</div></section><div class="detail-layout"><div class="detail-main"><section class="detail-panel"><p class="eyebrow">ПЛАН ЗАНЯТИЯ</p><h2>Что разбираем</h2>${c.topics.length ? `<ol class="topic-list">${c.topics.map((t, i) => `<li><span>${String(i + 1).padStart(2, "0")}</span><p>${e(t)}</p></li>`).join("")}</ol>` : '<p class="quiet">Подробная программа не записана в исходных материалах.</p>'}${c.practice.length ? `<div class="practice"><h3>Практика и вопросы</h3><ul>${c.practice.map((p) => `<li>${e(p)}</li>`).join("")}</ul></div>` : ""}</section></div><aside class="detail-aside"><div class="lesson-summary"><p class="eyebrow">О ЗАНЯТИИ</p><dl><div><dt>Раздел</dt><dd>${e(byModule[c.module].short)}</dd></div><div><dt>Семестр</dt><dd>${c.period === "autumn" ? "Осень 2024" : "Весна 2025"}</dd></div><div><dt>В архиве</dt><dd>${resourceCount(resources.length)}</dd></div></dl><a href="#class-materials" class="button" data-scroll-materials>К материалам ↓</a></div>${c.note ? `<div class="source-note"><span>ⓘ</span><h3>Об этой записи</h3><p>${e(c.note)}</p></div>` : ""}</aside></div><section id="class-materials" class="class-materials"><div class="section-heading"><h2>Материалы занятия</h2><span class="quiet">${resourceCount(resources.length)}</span></div>${resources.length ? `<div class="resource-grid">${resources.map(resourceCard).join("")}</div>` : '<div class="source-note"><p>Отдельных файлов нет. Программа сохранена в исходных заметках ниже.</p></div>'}</section>${c.notes_html ? `<details class="original-notes"><summary><span>Из исходных заметок</span><span>Читать программу и вопросы ＋</span></summary><div class="prose">${c.notes_html}</div><a class="text-link" href="readers/source-notes.html">Открыть весь исходный документ ↗</a></details>` : ""}<nav class="lesson-navigation" aria-label="Соседние занятия">${previous ? `<a href="${route("class", { id: previous.id })}"><span>← ПРЕДЫДУЩАЯ ЗАПИСЬ</span><strong>${e(previous.title)}</strong></a>` : "<span></span>"}${next ? `<a href="${route("class", { id: next.id })}"><span>СЛЕДУЮЩАЯ ЗАПИСЬ →</span><strong>${e(next.title)}</strong></a>` : ""}</nav>`;
 }
+// A lab whose script did not load leaves a note on its own route; every other route still works.
+function labMissing() {
+  return language === "en"
+    ? heading("INTERACTIVE LAB", "The lab did not load", "Its script failed to load. Reload the page to try again.")
+    : heading("ИНТЕРАКТИВНАЯ ЛАБОРАТОРИЯ", "Лаборатория не загрузилась", "Не удалось загрузить её скрипт. Обновите страницу, чтобы попробовать снова.");
+}
 function notFound() {
   return `${heading("404", "Запись не найдена", "Возможно, ссылка устарела или в ней есть опечатка.")}<a class="button" href="#timeline">Открыть хронологию</a>`;
 }
 function render(preserveFocus = false) {
   if (!course) return;
-  window.MLRegressionLab.unmount();
-  window.MLClassificationLab.unmount();
+  window.MLRegressionLab?.unmount();
+  window.MLClassificationLab?.unmount();
   const activeId = document.activeElement.id;
   const selection =
     document.activeElement instanceof HTMLInputElement
@@ -338,8 +344,9 @@ function render(preserveFocus = false) {
       topics,
       library,
       class: classDetail,
-      regression: () => window.MLRegressionLab.html(language),
-      classification: () => window.MLClassificationLab.html(language),
+      regression: () => window.MLRegressionLab?.html(language) ?? labMissing(),
+      classification: () =>
+        window.MLClassificationLab?.html(language) ?? labMissing(),
     }[state.view] || notFound
   )();
   $("#breadcrumb-current").textContent = title;
@@ -364,9 +371,9 @@ function render(preserveFocus = false) {
   }
   window.ML_TRANSLATE(document.body, language);
   if (state.view === "regression")
-    window.MLRegressionLab.mount($("#regression-lab"), language);
+    window.MLRegressionLab?.mount($("#regression-lab"), language);
   if (state.view === "classification")
-    window.MLClassificationLab.mount($("#classification-lab"), language);
+    window.MLClassificationLab?.mount($("#classification-lab"), language);
   $("#announcement").textContent =
     $(".results-toolbar")?.textContent || t(title);
 }

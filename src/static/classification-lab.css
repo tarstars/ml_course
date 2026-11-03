@@ -3,14 +3,15 @@
 .cl-heading { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px; align-items: flex-start; margin-bottom: 25px; }
 .cl-heading h1 { font-size: clamp(28px, 3.4vw, 42px); }
 .cl-heading .page-description { max-width: 660px; margin-top: 12px; }
+/* The regression lab's "all in your browser" badge, under the description. */
+.cl-live { display: flex; align-items: center; gap: 7px; color: var(--muted); white-space: nowrap; font-size: 14px; letter-spacing: 1px; margin-top: 12px; }
 .cl-presentation-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-left: auto; }
 .cl-presentation-controls label { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; }
 .cl-flow { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; padding: 13px 0; margin-bottom: 19px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); font-size: 16px; color: var(--muted); }
 .cl-flow b { font-weight: 400; color: #a4b2a5; }
 
-/* Cards and shared controls. Later cards stay hidden until they get content. */
+/* Cards and shared controls. */
 .cl-card { min-width: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--white); }
-.cl-card:empty { display: none; }
 .cl-card + .cl-card { margin-top: 20px; }
 .cl-card-heading { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 20px 24px 6px; }
 .cl-card-heading h2 { font-size: 24px; letter-spacing: -.45px; }
@@ -59,7 +60,7 @@
 .cl-segmented { display: flex; flex-wrap: wrap; gap: 2px; max-width: 100%; padding: 3px; background: #f0f3ed; border-radius: 6px; }
 .cl-segmented button { min-height: 40px; padding: 6px 12px; border-radius: 4px; font-size: 16px; white-space: nowrap; color: #243d2b; }
 .cl-segmented button[aria-pressed="true"] { background: var(--green); color: white; }
-#cl-plot { display: block; width: 100%; height: auto; aspect-ratio: 960 / 420; touch-action: none; user-select: none; -webkit-user-select: none; cursor: col-resize; }
+#cl-plot { display: block; width: 100%; height: auto; aspect-ratio: 960 / 420; touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: col-resize; }
 #cl-plot:focus, .cl-handle:focus { outline: none; }
 #cl-plot:focus-visible { outline: 3px solid #c79951; outline-offset: -3px; }
 .cl-grid { stroke: #e9ede5; stroke-width: 1; }
@@ -135,7 +136,7 @@
 .cl-presentation { --cl-number: calc(32px * var(--cl-text-scale)); --cl-label: calc(22px * var(--cl-text-scale)); --cl-small: calc(18px * var(--cl-text-scale)); }
 .cl-presentation .cl-heading { align-items: center; margin-bottom: 16px; }
 .cl-presentation .cl-heading h1 { font-size: 36px; letter-spacing: -.7px; }
-.cl-presentation .cl-heading .eyebrow, .cl-presentation .cl-heading .page-description, .cl-presentation .cl-flow { display: none; }
+.cl-presentation .cl-heading .eyebrow, .cl-presentation .cl-heading .page-description, .cl-presentation .cl-live, .cl-presentation .cl-flow { display: none; }
 .cl-presentation .cl-presentation-controls label { font-size: 20px; }
 .cl-presentation .cl-presentation-controls select { font-size: 20px; width: 108px; height: 44px; }
 .cl-presentation input[type="checkbox"] { width: 24px; height: 24px; }
@@ -174,11 +175,26 @@
 .cl-presentation .cl-roc-text { max-width: calc(640px * var(--cl-text-scale)); }
 .cl-presentation .cl-roc-text p { font-size: calc(20px * var(--cl-text-scale)); }
 .cl-presentation #cl-auc { font-size: calc(26px * var(--cl-text-scale)); }
-/* On a wide screen the matrix stays beside the metric table; both shrink before either scrolls. */
-@media (min-width: 1200px) {
-  .cl-presentation .cl-confusion-layout { flex-wrap: nowrap; }
-  .cl-presentation .cl-matrix-block { flex: 0 1 auto; }
-  .cl-presentation .cl-metrics-block { flex: 1 1 auto; }
+/* The matrix sits above the metric table at its own width, unless the screen has room for both side by side
+   at the chosen text size. Squeezed to their narrowest, the Russian tables need about 1110, 1320 and 1510 px
+   at 100, 125 and 150 %; the breakpoints leave room beyond that. Side by side, the matrix never shrinks below
+   its narrowest layout, so it is never cut; only the metric table may scroll. */
+.cl-presentation .cl-matrix-block { flex: 0 1 auto; }
+.cl-presentation .cl-metrics-block { flex: 1 1 100%; }
+@media (min-width: 1260px) {
+  .cl-presentation[data-cl-text-scale="1"] .cl-confusion-layout { flex-wrap: nowrap; }
+  .cl-presentation[data-cl-text-scale="1"] .cl-matrix-block { min-width: min-content; }
+  .cl-presentation[data-cl-text-scale="1"] .cl-metrics-block { flex-basis: auto; }
+}
+@media (min-width: 1500px) {
+  .cl-presentation[data-cl-text-scale="1.25"] .cl-confusion-layout { flex-wrap: nowrap; }
+  .cl-presentation[data-cl-text-scale="1.25"] .cl-matrix-block { min-width: min-content; }
+  .cl-presentation[data-cl-text-scale="1.25"] .cl-metrics-block { flex-basis: auto; }
+}
+@media (min-width: 1800px) {
+  .cl-presentation[data-cl-text-scale="1.5"] .cl-confusion-layout { flex-wrap: nowrap; }
+  .cl-presentation[data-cl-text-scale="1.5"] .cl-matrix-block { min-width: min-content; }
+  .cl-presentation[data-cl-text-scale="1.5"] .cl-metrics-block { flex-basis: auto; }
 }
 
 @media (max-width: 720px) {
@@ -199,15 +215,20 @@
   .cl-legend .cl-hint { margin-left: 0; }
   .cl-readout { padding: 8px 16px 16px; font-size: 16px; }
   .cl-confusion-layout, .cl-roc-layout { padding-left: 16px; padding-right: 16px; }
-  .cl-matrix-block, .cl-metrics-block { flex-basis: 100%; }
-  .cl-confusion th { padding: 5px 4px; font-size: 13px; }
-  .cl-cell { padding: 8px 4px 10px; font-size: 24px; }
-  .cl-total { padding: 6px 4px; font-size: 14px; }
-  .cl-metrics th, .cl-metrics td { padding: 6px 5px; }
-  .cl-metric-name { font-size: 15px; }
-  .cl-formula { font-size: 12px; white-space: normal; overflow-wrap: anywhere; }
-  .cl-metrics td.cl-primary { font-size: 16px; }
-  .cl-metrics td.cl-secondary { font-size: 13px; }
+  /* The two tables keep their normal phone sizes in lecture view too, so the value columns stay on screen. */
+  .cl-matrix-block, .cl-metrics-block, .cl-presentation .cl-matrix-block, .cl-presentation .cl-metrics-block { flex-basis: 100%; }
+  .cl-presentation .cl-confusion caption { font-size: 16px; }
+  .cl-confusion th, .cl-presentation .cl-confusion th { padding: 5px 4px; font-size: 13px; }
+  .cl-presentation .cl-metrics thead th { font-size: 14px; }
+  .cl-cell, .cl-presentation .cl-cell { padding: 8px 4px 10px; font-size: 24px; }
+  .cl-presentation .cl-cell::before { font-size: 12px; }
+  .cl-total, .cl-presentation .cl-total { padding: 6px 4px; font-size: 14px; }
+  .cl-metrics th, .cl-metrics td, .cl-presentation .cl-metrics th, .cl-presentation .cl-metrics td { padding: 6px 5px; }
+  .cl-metric-name, .cl-presentation .cl-metric-name { font-size: 15px; }
+  .cl-presentation .cl-tag { font-size: 12px; }
+  .cl-formula, .cl-presentation .cl-formula { font-size: 12px; white-space: normal; overflow-wrap: anywhere; }
+  .cl-metrics td.cl-primary, .cl-presentation .cl-metrics td.cl-primary { font-size: 16px; }
+  .cl-metrics td.cl-secondary, .cl-presentation .cl-metrics td.cl-secondary { font-size: 13px; }
   /* The ROC plot takes the full width, with its explanation below. */
   #cl-roc, .cl-roc-text { flex-basis: 100%; }
   #cl-roc { width: 100%; }
@@ -217,4 +238,10 @@
 }
 @media (max-width: 400px) {
   .cl-groups, .cl-presentation .cl-groups { grid-template-columns: minmax(0, 1fr); }
+  /* The formula column gives way so that Metric | Train | Test fit; wider screens show it. */
+  .cl-metrics .cl-formula-heading, .cl-metrics .cl-formula { display: none; }
+  .cl-confusion th, .cl-presentation .cl-confusion th, .cl-cell, .cl-presentation .cl-cell, .cl-total, .cl-presentation .cl-total { padding-left: 3px; padding-right: 3px; }
+  .cl-metrics th, .cl-metrics td, .cl-presentation .cl-metrics th, .cl-presentation .cl-metrics td { padding-left: 4px; padding-right: 4px; }
+  .cl-metrics thead th, .cl-presentation .cl-metrics thead th { font-size: 12px; }
+  .cl-tag, .cl-presentation .cl-tag { white-space: normal; }
 }

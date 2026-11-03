@@ -442,11 +442,20 @@ def check_lecture_view(browser, base: str, screenshots: Path):
     page.select_option("#cl-text-size", "1.5")
     assert page.locator('[data-cl-metric="accuracy"] .cl-primary').evaluate("e => parseFloat(getComputedStyle(e).fontSize)") >= 48
     page.screenshot(path=str(screenshots / "lecture-classification-1080p.png"))
+    for width, height in ((1280, 720), (1366, 768)):
+        page.set_viewport_size({"width": width, "height": height})
+        for scale in ("1.25", "1.5"):
+            page.select_option("#cl-text-size", scale)
+            for lang, title in (("en", "Classification metrics"), ("ru", "Метрики классификации")):
+                page.goto(base + f"#classification?lang={lang}")
+                expect(page.locator("#cl-title")).to_have_text(title)
+                assert page.locator(".cl-matrix-block").evaluate("e => e.scrollWidth <= e.clientWidth"), ("lecture-view matrix", width, scale, lang)
+    page.set_viewport_size({"width": 1920, "height": 1080})
     page.locator("#cl-presentation").uncheck()
     expect(page.locator("#sidebar")).to_be_visible()
     assert not errors, errors
     context.close()
-    print("PASS: live theta/X/Y/Gram/determinant updates before pointerup, graph beside all tabs, preserved matrix scroll, 32–48 px values, 1080p/720p/mobile, language and size preferences; classification lecture view at 32–48 px")
+    print("PASS: live theta/X/Y/Gram/determinant updates before pointerup, graph beside all tabs, preserved matrix scroll, 32–48 px values, 1080p/720p/mobile, language and size preferences; classification lecture view at 32–48 px with the matrix whole at 720p/768p")
 
 
 def check_browser(base: str, executable: str | None, screenshots: Path):
@@ -533,6 +542,16 @@ def check_browser(base: str, executable: str | None, screenshots: Path):
             expect(page.locator("#cl-plot .cl-curve")).to_have_count(2)
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), (width, "classification")
             page.screenshot(path=str(screenshots / f"classification-mobile-{width}.png"), full_page=True, animations="disabled")
+            presenting = page.locator("#cl-presentation").is_checked()
+            if not presenting:
+                page.locator("#cl-presentation").check()
+            for lang, title in (("en", "Classification metrics"), ("ru", "Метрики классификации")):
+                page.goto(base + f"#classification?lang={lang}")
+                expect(page.locator("#cl-title")).to_have_text(title)
+                expect(page.locator("#cl-presentation")).to_be_checked()
+                assert page.locator(".cl-metrics-block").evaluate("e => e.scrollWidth <= e.clientWidth"), (width, lang, "lecture-view metric table")
+            if not presenting:
+                page.locator("#cl-presentation").uncheck()
         touch_context = browser.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True)
         touch_page = touch_context.new_page()
         touch_page.on("pageerror", lambda error: errors.append(str(error)))
@@ -543,12 +562,26 @@ def check_browser(base: str, executable: str | None, screenshots: Path):
         bounds = touch_plot.bounding_box()
         touch_page.touchscreen.tap(bounds["x"] + bounds["width"] / 2, bounds["y"] + bounds["height"] / 2)
         expect(touch_page.locator("#regression-lab")).to_have_attribute("data-observations", "1")
+        touch_page.goto(base + "#classification?lang=en")
+        touch_plot = touch_page.locator("#cl-plot")
+        touch_plot.scroll_into_view_if_needed()
+        bounds = touch_plot.bounding_box()
+        x, y = bounds["x"] + bounds["width"] * 0.3, bounds["y"] + bounds["height"] * 0.7
+        scrolled = touch_page.evaluate("scrollY")
+        cdp = touch_context.new_cdp_session(touch_page)
+        cdp.send("Input.dispatchTouchEvent", {"type": "touchStart", "touchPoints": [{"x": x, "y": y}]})
+        for step in range(1, 13):
+            cdp.send("Input.dispatchTouchEvent", {"type": "touchMove", "touchPoints": [{"x": x, "y": y - 15 * step}]})
+            touch_page.wait_for_timeout(16)
+        cdp.send("Input.dispatchTouchEvent", {"type": "touchEnd", "touchPoints": []})
+        touch_page.wait_for_function("before => scrollY > before", arg=scrolled)
+        expect(touch_page.locator("#cl-threshold")).to_have_value("0.5")
         touch_context.close()
         check_lecture_view(browser, base, screenshots)
         assert not errors, errors
         assert not local_failures, local_failures
         browser.close()
-    print("PASS: RU/EN, search, filters, topics, class navigation, PDF/image previews, notebooks, empty/404 states, mobile layouts; no JavaScript or local HTTP errors")
+    print("PASS: RU/EN, search, filters, topics, class navigation, PDF/image previews, notebooks, empty/404 states, mobile layouts incl. the lecture-view metric table and a vertical swipe on the classification plot; no JavaScript or local HTTP errors")
 
 
 if __name__ == "__main__":
