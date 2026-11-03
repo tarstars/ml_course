@@ -159,6 +159,20 @@
       return language === "en" ? text : text.replace(".", ",");
     };
     let columns = [], model, logits, probabilities, logitRange, fixed, classes = null, frame = 0, thresholdFrame = 0, drag = null;
+    // --cl-plot-font is a size on screen, but the plots draw in viewBox units: divide it by each SVG's scale,
+    // capped at the 16 units their fixed margins leave room for. Measured on presentation changes and resizes.
+    const fonts = new Map();
+    function measureFonts() {
+      let changed = false;
+      for (const svg of [plot, rocSvg]) {
+        const { width, height } = svg.getBoundingClientRect(), box = svg.viewBox.baseVal;
+        const px = parseFloat(getComputedStyle(svg).getPropertyValue("--cl-plot-font")) || 16;
+        const scale = Math.min(width / box.width, height / box.height);
+        const font = Math.min(16, scale > 0 ? px / scale : 16);
+        if (font !== fonts.get(svg)) { fonts.set(svg, font); changed = true; }
+      }
+      return changed;
+    }
     function refit() {
       columns = activeColumns();
       model = M.fit(D.train.X, D.train.y, { penalty: state.penalty, lambda: state.lambda, columns });
@@ -237,7 +251,7 @@
       plot.innerHTML = P.distributionPlot({
         axis: state.axis, range: [lo, hi], bins: 40, ...classScores(),
         threshold: Math.min(hi, Math.max(lo, shown())),
-        fontSize: parseFloat(getComputedStyle(plot).getPropertyValue("--cl-plot-font")) || 16,
+        fontSize: fonts.get(plot),
         labels: { positive: w("Survived", "Выжили"), negative: w("Died", "Погибли"), x: logit ? w("logit", "логит") : w("probability", "вероятность"), y: w("passengers", "пассажиры"), empty: w("No data", "Нет данных") },
       });
       // The new markup has a new handle: keep keyboard focus on it.
@@ -279,7 +293,7 @@
     function rocCard(counts) {
       rocSvg.innerHTML = P.rocPlot({
         primary: fixed[state.split].roc.points, secondary: fixed[other(state.split)].roc.points, operating: operatingPoint(counts),
-        fontSize: parseFloat(getComputedStyle(rocSvg).getPropertyValue("--cl-plot-font")) || 16,
+        fontSize: fonts.get(rocSvg),
         labels: { x: w("False positive rate", "Доля ложных срабатываний"), y: w("True positive rate", "Доля верных срабатываний") },
       });
       $("#cl-roc-primary").textContent = splitName(state.split);
@@ -331,8 +345,10 @@
       document.body.classList.toggle("lr-presenting", state.presentation);
       root.classList.toggle("cl-presentation", state.presentation);
       root.style.setProperty("--cl-text-scale", state.textScale);
+      root.style.setProperty("--cl-plot-font", `${(state.presentation ? 26 : 20) * state.textScale}px`);
       $("#cl-presentation").checked = state.presentation;
       $("#cl-text-size").value = String(state.textScale);
+      measureFonts();
     }
     // Pointer x in viewBox units, as a value on the displayed axis within the axis range.
     function pointerValue(event) {
@@ -394,7 +410,8 @@
           localStorage.setItem("ml-regression-presentation", String(state.presentation));
           localStorage.setItem("ml-regression-text-scale", String(state.textScale));
         } catch { /* Presentation controls still work without storage. */ }
-        presentation(); return;
+        presentation();
+        renderThreshold(); return;
       }
       if (el.id === "cl-threshold") {
         // Out-of-range or malformed thresholds are ignored, like λ; others snap to the slider step.
@@ -416,8 +433,13 @@
     Object.assign(state, preferences());
     presentation();
     update();
+    // A new plot width changes the font in viewBox units: redraw the plots.
+    const resized = new ResizeObserver(() => { if (measureFonts()) scheduleThreshold(); });
+    resized.observe(plot);
+    resized.observe(rocSvg);
     teardown = () => {
       controller.abort();
+      resized.disconnect();
       if (frame) cancelAnimationFrame(frame);
       if (thresholdFrame) cancelAnimationFrame(thresholdFrame);
       document.body.classList.remove("lr-presenting");

@@ -121,6 +121,7 @@
 #cl-roc { display: block; flex: 0 1 480px; width: min(100%, 480px); height: auto; aspect-ratio: 1; }
 .cl-roc-text { flex: 1 1 280px; min-width: 0; max-width: 560px; padding-top: 14px; }
 .cl-roc-text p { margin-top: 14px; font-size: 17px; line-height: 1.55; }
+#cl-auc { display: inline-block; max-width: 100%; white-space: normal; }
 .cl-roc { fill: none; stroke-width: 3; stroke-linejoin: round; }
 .cl-roc.cl-primary { stroke: #234b3b; }
 .cl-roc.cl-secondary { stroke: #8a9c8e; stroke-width: 2.5; stroke-dasharray: 8 6; }
@@ -131,9 +132,54 @@
 .cl-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); }
 
 /* Lecture view: the shared body.lr-presenting rules hide the site chrome; text follows the chosen size. */
+.cl-presentation { --cl-number: calc(32px * var(--cl-text-scale)); --cl-label: calc(22px * var(--cl-text-scale)); --cl-small: calc(18px * var(--cl-text-scale)); }
+.cl-presentation .cl-heading { align-items: center; margin-bottom: 16px; }
+.cl-presentation .cl-heading h1 { font-size: 36px; letter-spacing: -.7px; }
+.cl-presentation .cl-heading .eyebrow, .cl-presentation .cl-heading .page-description, .cl-presentation .cl-flow { display: none; }
+.cl-presentation .cl-presentation-controls label { font-size: 20px; }
+.cl-presentation .cl-presentation-controls select { font-size: 20px; width: 108px; height: 44px; }
+.cl-presentation input[type="checkbox"] { width: 24px; height: 24px; }
+.cl-presentation .cl-card-heading h2 { font-size: calc(26px * var(--cl-text-scale)); color: #12231a; }
+.cl-presentation .cl-badge { font-size: var(--cl-small); }
+.cl-presentation h3 { font-size: var(--cl-label); }
 .cl-presentation .cl-hint { font-size: calc(16px * var(--cl-text-scale)); }
 .cl-presentation .cl-group .cl-hint { font-size: calc(14px * var(--cl-text-scale)); }
 .cl-presentation .cl-group-name, .cl-presentation .cl-status { font-size: calc(16px * var(--cl-text-scale)); }
+.cl-presentation .cl-groups { grid-template-columns: repeat(auto-fill, minmax(min(calc(240px * var(--cl-text-scale)), 100%), 1fr)); }
+.cl-presentation .cl-control > label { font-size: var(--cl-label); line-height: 1.25; }
+.cl-presentation select { font-size: var(--cl-label); height: calc(var(--cl-label) + 26px); }
+.cl-presentation .cl-range-row { height: auto; min-height: 48px; }
+.cl-presentation .cl-range-row input[type="number"] { font-size: calc(24px * var(--cl-text-scale)); width: calc(120px * var(--cl-text-scale)); height: calc(24px * var(--cl-text-scale) + 24px); }
+.cl-presentation .cl-coefficients { grid-template-columns: repeat(auto-fill, minmax(min(calc(300px * var(--cl-text-scale)), 100%), 1fr)); }
+.cl-presentation .cl-coefficient span, .cl-presentation .cl-intercept span { font-size: var(--cl-small); }
+.cl-presentation .cl-coefficient strong, .cl-presentation .cl-intercept strong { font-size: calc(28px * var(--cl-text-scale)); }
+.cl-presentation .cl-intercept { max-width: calc(560px * var(--cl-text-scale)); }
+.cl-presentation .cl-segmented button { min-height: 44px; font-size: var(--cl-small); }
+.cl-presentation .cl-legend { font-size: var(--cl-small); }
+.cl-presentation .cl-threshold-row > label { font-size: var(--cl-label); }
+.cl-presentation .cl-readout { font-size: calc(24px * var(--cl-text-scale)); }
+.cl-presentation .cl-confusion caption { font-size: var(--cl-label); }
+.cl-presentation .cl-confusion th, .cl-presentation .cl-metrics thead th { font-size: var(--cl-small); }
+.cl-presentation .cl-cell, .cl-presentation .cl-total { font-size: var(--cl-number); font-weight: 650; }
+.cl-presentation .cl-cell::before { font-size: calc(14px * var(--cl-text-scale)); }
+.cl-presentation .cl-metrics th, .cl-presentation .cl-metrics td { padding: 8px 14px; vertical-align: baseline; }
+.cl-presentation .cl-metric-name { font-size: var(--cl-label); }
+.cl-presentation .cl-tag { font-size: calc(14px * var(--cl-text-scale)); }
+/* The hint stays in the row's title; on a projector the table stays compact. */
+.cl-presentation .cl-metrics .cl-hint { display: none; }
+.cl-presentation .cl-formula { font-size: var(--cl-small); white-space: normal; }
+.cl-presentation .cl-metrics td.cl-primary { font-size: var(--cl-number); }
+.cl-presentation .cl-metrics td.cl-secondary { font-size: calc(22px * var(--cl-text-scale)); }
+.cl-presentation #cl-roc { flex-basis: min(780px, calc(100vh - 160px)); }
+.cl-presentation .cl-roc-text { max-width: calc(640px * var(--cl-text-scale)); }
+.cl-presentation .cl-roc-text p { font-size: calc(20px * var(--cl-text-scale)); }
+.cl-presentation #cl-auc { font-size: calc(26px * var(--cl-text-scale)); }
+/* On a wide screen the matrix stays beside the metric table; both shrink before either scrolls. */
+@media (min-width: 1200px) {
+  .cl-presentation .cl-confusion-layout { flex-wrap: nowrap; }
+  .cl-presentation .cl-matrix-block { flex: 0 1 auto; }
+  .cl-presentation .cl-metrics-block { flex: 1 1 auto; }
+}
 
 @media (max-width: 720px) {
   .cl-heading { gap: 14px; }
@@ -143,10 +189,12 @@
   .cl-card-heading { padding: 17px 16px 6px; }
   .cl-card-heading h2 { font-size: 22px; }
   .cl-features, .cl-controls { padding-left: 16px; padding-right: 16px; }
+  .cl-groups, .cl-presentation .cl-groups { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .cl-controls { grid-template-columns: minmax(0, 1fr); gap: 18px; }
   .cl-coefficients-block { padding: 18px 16px 16px; }
+  .cl-intercept { flex-wrap: wrap; }
   .cl-status { padding-left: 16px; padding-right: 16px; }
-  .cl-toolbar, .cl-legend, .cl-threshold-row { padding-left: 16px; padding-right: 16px; }
+  .cl-toolbar, .cl-legend:not(.cl-roc-legend), .cl-threshold-row { padding-left: 16px; padding-right: 16px; }
   .cl-segmented button { padding-left: 9px; padding-right: 9px; }
   .cl-legend .cl-hint { margin-left: 0; }
   .cl-readout { padding: 8px 16px 16px; font-size: 16px; }
@@ -160,4 +208,13 @@
   .cl-formula { font-size: 12px; white-space: normal; overflow-wrap: anywhere; }
   .cl-metrics td.cl-primary { font-size: 16px; }
   .cl-metrics td.cl-secondary { font-size: 13px; }
+  /* The ROC plot takes the full width, with its explanation below. */
+  #cl-roc, .cl-roc-text { flex-basis: 100%; }
+  #cl-roc { width: 100%; }
+  .cl-roc-text, .cl-presentation .cl-roc-text { max-width: none; padding-top: 0; }
+  .cl-badge { white-space: normal; }
+  .cl-presentation .cl-heading h1 { font-size: 30px; }
+}
+@media (max-width: 400px) {
+  .cl-groups, .cl-presentation .cl-groups { grid-template-columns: minmax(0, 1fr); }
 }

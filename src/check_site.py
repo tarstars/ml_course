@@ -303,11 +303,14 @@ def check_classification(page, base: str, screenshots: Path):
     expect(page.locator('[data-cl-metric="npv"] .cl-primary')).to_have_text("—")
     page.reload()                                                                         # restore defaults
     expect(lab).to_have_attribute("data-cl-columns", "15")
+    page.locator('[data-cl-group="fare_missing"]').check()
+    expect(page.locator("#cl-status")).to_contain_text("constant")
+    page.locator('[data-cl-group="fare_missing"]').uncheck()
     page.locator('[data-lang="ru"]').click()
     expect(page.locator("#cl-title")).to_have_text("Метрики классификации")
     page.locator('[data-lang="en"]').click()
     page.screenshot(path=str(screenshots / "classification-en.png"), full_page=True)
-    print("PASS: classification lab loads, feature switches refit, invalid λ ignored, separation and collinearity reported, score distribution with axis toggle, threshold slider, plot click and train/test switch, confusion matrix, metric table with undefined values, ROC curve and operating point, RU/EN")
+    print("PASS: classification lab loads, feature switches refit, invalid λ ignored, separation, collinearity and constant columns reported, score distribution with axis toggle, threshold slider, plot click and train/test switch, confusion matrix, metric table with undefined values, ROC curve and operating point, RU/EN")
 
 
 def check_lecture_view(browser, base: str, screenshots: Path):
@@ -424,7 +427,26 @@ def check_lecture_view(browser, base: str, screenshots: Path):
     expect(page.locator("body")).not_to_have_class("lr-presenting")
     assert not errors, errors
     context.close()
-    print("PASS: live theta/X/Y/Gram/determinant updates before pointerup, graph beside all tabs, preserved matrix scroll, 32–48 px values, 1080p/720p/mobile, language and size preferences")
+    # The regression part stored lecture view as off; a fresh context starts from the default (on).
+    context = browser.new_context(viewport={"width": 1920, "height": 1080})
+    page = context.new_page()
+    errors = []
+    page.on("pageerror", lambda error: errors.append(str(error)))
+    page.goto(base + "#classification?lang=en")
+    expect(page.locator("#cl-presentation")).to_be_checked()
+    expect(page.locator("body")).to_have_class("lr-presenting")
+    expect(page.locator("#sidebar")).not_to_be_visible()
+    assert page.locator('[data-cl-metric="accuracy"] .cl-primary').evaluate("e => parseFloat(getComputedStyle(e).fontSize)") >= 32
+    assert page.locator("#cl-plot text").first.evaluate("e => parseFloat(getComputedStyle(e).fontSize) * e.getScreenCTM().a") >= 25
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+    page.select_option("#cl-text-size", "1.5")
+    assert page.locator('[data-cl-metric="accuracy"] .cl-primary').evaluate("e => parseFloat(getComputedStyle(e).fontSize)") >= 48
+    page.screenshot(path=str(screenshots / "lecture-classification-1080p.png"))
+    page.locator("#cl-presentation").uncheck()
+    expect(page.locator("#sidebar")).to_be_visible()
+    assert not errors, errors
+    context.close()
+    print("PASS: live theta/X/Y/Gram/determinant updates before pointerup, graph beside all tabs, preserved matrix scroll, 32–48 px values, 1080p/720p/mobile, language and size preferences; classification lecture view at 32–48 px")
 
 
 def check_browser(base: str, executable: str | None, screenshots: Path):
@@ -507,6 +529,10 @@ def check_browser(base: str, executable: str | None, screenshots: Path):
             expect(page.locator("#lr-theta .lr-coefficient")).to_have_count(21)
             assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), (width, "regression", "degree 20")
             page.screenshot(path=str(screenshots / f"regression-mobile-{width}.png"), full_page=True, animations="disabled")
+            page.goto(base + "#classification?lang=en")
+            expect(page.locator("#cl-plot .cl-curve")).to_have_count(2)
+            assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), (width, "classification")
+            page.screenshot(path=str(screenshots / f"classification-mobile-{width}.png"), full_page=True, animations="disabled")
         touch_context = browser.new_context(viewport={"width": 390, "height": 844}, is_mobile=True, has_touch=True)
         touch_page = touch_context.new_page()
         touch_page.on("pageerror", lambda error: errors.append(str(error)))
