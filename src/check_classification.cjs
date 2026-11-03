@@ -149,4 +149,15 @@ const rocSvg = P.rocPlot({ primary: [{ fpr: 0, tpr: 0 }, { fpr: 0.2, tpr: 0.8 },
 const rx = P.scale([0, 1], P.ROC.box);
 assert.ok(rocSvg.includes(`id="cl-operating-point" cx="${rx.px(0.2)}"`));
 assert.ok(!rocSvg.includes("cl-secondary"));
-console.log("PASS: closed-form fit, intercept only, L2 optimality, L1 KKT and exact zeros, separation, constant and collinear columns, minimum-norm solve, reference reproduction, shipped edge cases, confusion matrix, metrics with null denominators, ROC and AUC, log loss and Brier, histogram, Silverman bandwidth and reflected KDE, distribution and ROC SVG builders, cached distribution layers give identical markup");
+// Margins grow with the font: the plot area, and with it the threshold line, moves; nothing is lost.
+assert.deepEqual(P.plotBox("distribution", 16), P.DISTRIBUTION.box); assert.deepEqual(P.plotBox("roc", 16), P.ROC.box);
+const bigSvg = P.distributionPlot({ ...sample, fontSize: 32 });
+const lineX = (markup) => +markup.match(/id="cl-threshold-line" x1="([^"]+)"/)[1];
+assert.notEqual(lineX(bigSvg), lineX(svg));
+close(lineX(bigSvg), P.scale([-6, 6], P.plotBox("distribution", 32)).px(0), 1e-9);
+["cl-tp", "cl-fn", "cl-fp", "cl-tn"].forEach((k) => assert.ok(bigSvg.includes(`class="cl-region ${k}"`), k));
+assert.equal((bigSvg.match(/class="cl-curve cl-(positive|negative)"/g) || []).length, 2);
+const bigRoc = P.rocPlot({ primary: [{ fpr: 0, tpr: 0 }, { fpr: 0.2, tpr: 0.8 }, { fpr: 1, tpr: 1 }], secondary: null, operating: { fpr: 0.2, tpr: 0.8 }, fontSize: 40, labels: { x: "FPR", y: "TPR" } });
+const [, cx, cy] = bigRoc.match(/id="cl-operating-point" cx="([^"]+)" cy="([^"]+)"/).map(Number);
+assert.ok(cx >= 0 && cx <= 480 && cy >= 0 && cy <= 480, `${cx}, ${cy}`);
+console.log("PASS: closed-form fit, intercept only, L2 optimality, L1 KKT and exact zeros, separation, constant and collinear columns, minimum-norm solve, reference reproduction, shipped edge cases, confusion matrix, metrics with null denominators, ROC and AUC, log loss and Brier, histogram, Silverman bandwidth and reflected KDE, distribution and ROC SVG builders, cached distribution layers give identical markup, plot margins that grow with the font");

@@ -2,9 +2,25 @@
 (function (root) {
   "use strict";
   const MathApi = typeof module !== "undefined" && module.exports ? require("./classification-math.js") : root.MLClassificationMath;
-  const DISTRIBUTION = { width: 960, height: 420, box: { left: 64, right: 940, top: 24, bottom: 360 } };
-  const ROC = { width: 480, height: 480, box: { left: 56, right: 456, top: 24, bottom: 424 } };
+  const DISTRIBUTION = { width: 960, height: 420 };
+  const ROC = { width: 480, height: 480 };
   const gridPoints = 200;
+  // Width budget per character, in em: monospace tick digits are 0.6 em; titles are budgeted the same.
+  const EM = 0.6;
+  // The plot area inside the viewBox. Each margin holds what is drawn in it, so it grows with the font:
+  // left the widest y tick label (3 characters on the distribution, "0.25" on the ROC), bottom the x tick
+  // labels and the x title, top the y title. At fontSize 16 these are the original fixed boxes.
+  function plotBox(kind, fontSize) {
+    const roc = kind === "roc", { width, height } = roc ? ROC : DISTRIBUTION;
+    return {
+      left: Math.max(roc ? 56 : 64, (roc ? 4 : 3) * EM * fontSize + 12),
+      right: width - (roc ? 24 : 20),
+      top: Math.max(24, 1.5 * fontSize),
+      bottom: height - Math.max(roc ? 56 : 60, 3.4 * fontSize),
+    };
+  }
+  DISTRIBUTION.box = plotBox("distribution", 16);
+  ROC.box = plotBox("roc", 16);
 
   const scale = (range, box) => {
     const [lo, hi] = range;
@@ -22,12 +38,26 @@
     };
   };
   const escapeXml = (text) => String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
-  const text = (x, y, label, fontSize, cls, anchor, extra = "") =>
-    `<text class="${cls}" x="${x}" y="${y}" text-anchor="${anchor}" font-size="${fontSize}"${extra}>${escapeXml(label)}</text>`;
+  const text = (x, y, label, fontSize, cls, anchor) =>
+    `<text class="${cls}" x="${x}" y="${y}" text-anchor="${anchor}" font-size="${fontSize}">${escapeXml(label)}</text>`;
   const linePath = (points) => points.map(([x, y], i) => `${i ? "L" : "M"}${x} ${y}`).join(" ");
   const closedPath = (points, baseline) =>
     points.length ? `${linePath(points)} L${points.at(-1)[0]} ${baseline} L${points[0][0]} ${baseline} Z` : "";
   const label = (v) => String(Math.round(v * 1e6) / 1e6);
+  // Label every k-th tick counted from 0, with the smallest k that keeps labels `need` apart.
+  const every = (step, spacing, need) => {
+    const k = Math.max(1, Math.ceil(need / spacing - 1e-9));
+    return (v) => Math.abs(Math.round(v / step)) % k === 0;
+  };
+  // Axis titles: x centred under the plot area, shifted to stay inside; y at the top-left corner of the
+  // plot area. A title's font shrinks below fontSize only when the text would not fit the viewBox.
+  function axisTitles(out, size, box, fs, lab) {
+    const fit = (title, room) => Math.min(fs, room / (EM * Math.max(1, String(title).length)));
+    const xf = fit(lab.x, size.width - 8), half = (EM * String(lab.x).length * xf) / 2;
+    const x = Math.min(size.width - 4 - half, Math.max(4 + half, (box.left + box.right) / 2));
+    out.push(text(x, box.bottom + fs * 2.8, lab.x, xf, "cl-axis-title", "middle"));
+    out.push(text(box.left, box.top - fs * 0.55, lab.y, fit(lab.y, size.width - box.left - 4), "cl-axis-title", "start"));
+  }
 
   // Gridline values: about `count` "nice" steps (1, 2, 5 × 10^k) from 0 up to `max`.
   function niceTicks(max, count) {
@@ -78,25 +108,26 @@
   }
 
   function distributionPlot(o) {
-    const { box } = DISTRIBUTION, fs = o.fontSize, lab = o.labels;
+    const fs = o.fontSize, lab = o.labels, box = plotBox("distribution", fs);
     const layers = o.layers || distributionLayers(o);
     const sx = scale(o.range, box);
     const out = [];
     const axes = (yMax) => {
-      const sy = scaleY([0, yMax], box);
-      niceTicks(yMax, 6).forEach((v) => {
+      const sy = scaleY([0, yMax], box), yTicks = niceTicks(yMax, 6), xs = xTicks(o.axis, o.range);
+      const yStep = yTicks[1] - yTicks[0], xStep = o.axis === "probability" ? 0.1 : 1;
+      const yShown = every(yStep, sy.px(0) - sy.px(yStep), 1.4 * fs);
+      const xShown = every(xStep, sx.px(xStep) - sx.px(0), (EM * Math.max(1, ...xs.map((v) => label(v).length)) + 0.5) * fs);
+      yTicks.forEach((v) => {
         const y = sy.px(v);
         out.push(`<line class="cl-grid" x1="${box.left}" x2="${box.right}" y1="${y}" y2="${y}"/>`);
-        out.push(text(box.left - 8, y + fs * 0.35, label(v), fs, "cl-tick", "end"));
+        if (yShown(v)) out.push(text(box.left - 8, y + fs * 0.35, label(v), fs, "cl-tick", "end"));
       });
-      xTicks(o.axis, o.range).forEach((v) => {
+      xs.forEach((v) => {
         const x = sx.px(v);
         out.push(`<line class="cl-grid" x1="${x}" x2="${x}" y1="${box.top}" y2="${box.bottom}"/>`);
-        out.push(text(x, box.bottom + fs * 1.3, label(v), fs, "cl-tick", "middle"));
+        if (xShown(v)) out.push(text(x, box.bottom + fs * 1.3, label(v), fs, "cl-tick", "middle"));
       });
-      out.push(text((box.left + box.right) / 2, box.bottom + fs * 2.8, lab.x, fs, "cl-axis-title", "middle"));
-      const cy = (box.top + box.bottom) / 2;
-      out.push(text(16, cy, lab.y, fs, "cl-axis-title", "middle", ` transform="rotate(-90 16 ${cy})"`));
+      axisTitles(out, DISTRIBUTION, box, fs, lab);
       return sy;
     };
     if (layers.empty) {
@@ -133,18 +164,17 @@
   }
 
   function rocPlot(o) {
-    const { box } = ROC, fs = o.fontSize, lab = o.labels;
+    const fs = o.fontSize, lab = o.labels, box = plotBox("roc", fs);
     const sx = scale([0, 1], box), sy = scaleY([0, 1], box);
+    const yShown = every(0.25, (box.bottom - box.top) / 4, 1.4 * fs), xShown = every(0.25, (box.right - box.left) / 4, (EM * 4 + 0.5) * fs);
     const out = [];
     [0, 0.25, 0.5, 0.75, 1].forEach((v) => {
       out.push(`<line class="cl-grid" x1="${box.left}" x2="${box.right}" y1="${sy.px(v)}" y2="${sy.px(v)}"/>`);
-      out.push(text(box.left - 8, sy.px(v) + fs * 0.35, label(v), fs, "cl-tick", "end"));
+      if (yShown(v)) out.push(text(box.left - 8, sy.px(v) + fs * 0.35, label(v), fs, "cl-tick", "end"));
       out.push(`<line class="cl-grid" x1="${sx.px(v)}" x2="${sx.px(v)}" y1="${box.top}" y2="${box.bottom}"/>`);
-      out.push(text(sx.px(v), box.bottom + fs * 1.3, label(v), fs, "cl-tick", "middle"));
+      if (xShown(v)) out.push(text(sx.px(v), box.bottom + fs * 1.3, label(v), fs, "cl-tick", "middle"));
     });
-    out.push(text((box.left + box.right) / 2, box.bottom + fs * 2.8, lab.x, fs, "cl-axis-title", "middle"));
-    const cy = (box.top + box.bottom) / 2;
-    out.push(text(16, cy, lab.y, fs, "cl-axis-title", "middle", ` transform="rotate(-90 16 ${cy})"`));
+    axisTitles(out, ROC, box, fs, lab);
     out.push(`<line class="cl-diagonal" x1="${sx.px(0)}" y1="${sy.px(0)}" x2="${sx.px(1)}" y2="${sy.px(1)}"/>`);
     const curve = (pts) => linePath(pts.map((p) => [sx.px(p.fpr), sy.px(p.tpr)]));
     if (Array.isArray(o.secondary) && o.secondary.length) out.push(`<path class="cl-roc cl-secondary" d="${curve(o.secondary)}"/>`);
@@ -153,7 +183,7 @@
     return out.join("\n");
   }
 
-  const api = { DISTRIBUTION, ROC, scale, distributionLayers, distributionPlot, rocPlot };
+  const api = { DISTRIBUTION, ROC, plotBox, scale, distributionLayers, distributionPlot, rocPlot };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.MLClassificationPlots = api;
 })(typeof window !== "undefined" ? window : globalThis);

@@ -159,8 +159,9 @@
       return language === "en" ? text : text.replace(".", ",");
     };
     let columns = [], model, logits, probabilities, logitRange, fixed, classes = null, frame = 0, thresholdFrame = 0, drag = null;
-    // --cl-plot-font is a size on screen, but the plots draw in viewBox units: divide it by each SVG's scale,
-    // capped at the 16 units their fixed margins leave room for. Measured on presentation changes and resizes.
+    // --cl-plot-font is a size on screen, but the plots draw in viewBox units: divide it by each SVG's scale.
+    // The plot margins grow with the font; 48 units keeps them from eating a small plot. Measured on
+    // presentation changes and resizes.
     const fonts = new Map();
     function measureFonts() {
       let changed = false;
@@ -168,7 +169,7 @@
         const { width, height } = svg.getBoundingClientRect(), box = svg.viewBox.baseVal;
         const px = parseFloat(getComputedStyle(svg).getPropertyValue("--cl-plot-font")) || 16;
         const scale = Math.min(width / box.width, height / box.height);
-        const font = Math.min(16, scale > 0 ? px / scale : 16);
+        const font = Math.min(48, scale > 0 ? px / scale : 16);
         if (font !== fonts.get(svg)) { fonts.set(svg, font); changed = true; }
       }
       return changed;
@@ -354,7 +355,7 @@
     function pointerValue(event) {
       const [lo, hi] = range();
       const { x } = new DOMPoint(event.clientX, event.clientY).matrixTransform(plot.getScreenCTM().inverse());
-      return Math.min(hi, Math.max(lo, P.scale([lo, hi], P.DISTRIBUTION.box).value(x)));
+      return Math.min(hi, Math.max(lo, P.scale([lo, hi], P.plotBox("distribution", fonts.get(plot))).value(x)));
     }
     listen("pointerdown", (event) => {
       if (event.button !== 0 || drag !== null) return;
