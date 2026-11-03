@@ -317,6 +317,7 @@ function notFound() {
 function render(preserveFocus = false) {
   if (!course) return;
   window.MLRegressionLab.unmount();
+  window.MLClassificationLab.unmount();
   const activeId = document.activeElement.id;
   const selection =
     document.activeElement instanceof HTMLInputElement
@@ -328,6 +329,7 @@ function render(preserveFocus = false) {
       topics: "Темы курса",
       library: "Библиотека",
       regression: "Лаборатория регрессии",
+      classification: "Лаборатория классификации",
       class: byClass[state.id]?.title || "Занятие",
     }[state.view] || "Не найдено";
   $("#app").innerHTML = (
@@ -337,6 +339,7 @@ function render(preserveFocus = false) {
       library,
       class: classDetail,
       regression: () => window.MLRegressionLab.html(language),
+      classification: () => window.MLClassificationLab.html(language),
     }[state.view] || notFound
   )();
   $("#breadcrumb-current").textContent = title;
@@ -362,6 +365,8 @@ function render(preserveFocus = false) {
   window.ML_TRANSLATE(document.body, language);
   if (state.view === "regression")
     window.MLRegressionLab.mount($("#regression-lab"), language);
+  if (state.view === "classification")
+    window.MLClassificationLab.mount($("#classification-lab"), language);
   $("#announcement").textContent =
     $(".results-toolbar")?.textContent || t(title);
 }

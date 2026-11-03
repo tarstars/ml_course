@@ -228,6 +228,42 @@ def check_regression(page, base: str, screenshots: Path):
     print(f"PASS: regression editing, undo/redo, uneven drawing, optional uniform replacement, matrices, penalties, singular systems, RU/EN state; dense-fit timings: {timings}")
 
 
+def check_classification(page, base: str, screenshots: Path):
+    page.goto(base + "#classification?lang=en")
+    lab = page.locator("#classification-lab")
+    expect(page.locator("#cl-title")).to_have_text("Classification metrics")
+    expect(page.locator('[data-nav="classification"]')).to_have_attribute("aria-current", "page")
+    expect(page.locator("#cl-groups input")).to_have_count(14)
+    expect(page.locator("#cl-groups input:checked")).to_have_count(10)
+    expect(lab).to_have_attribute("data-cl-columns", "15")
+    expect(page.locator("#cl-coefficients .cl-coefficient")).to_have_count(15)
+    expect(page.locator("#cl-penalty")).to_have_value("l2")
+    expect(page.locator("#cl-lambda")).to_have_value("1")
+    female = page.locator('#cl-coefficients [data-cl-column="female"] strong')
+    before = float(female.text_content())
+    page.locator('[data-cl-group="title"]').uncheck()
+    expect(lab).to_have_attribute("data-cl-columns", "11")
+    assert abs(float(female.text_content()) - before) > 0.05
+    page.locator('[data-cl-group="title"]').check()
+    page.locator("#cl-lambda").fill("-5")
+    page.locator("#cl-lambda").press("Tab")
+    expect(page.locator("#cl-lambda")).to_have_value("1")           # invalid input is ignored
+    page.locator("#cl-penalty").select_option("none")
+    expect(page.locator("#cl-lambda")).to_be_disabled()
+    page.locator('[data-cl-group="embarked_missing"]').check()
+    expect(page.locator("#cl-status")).to_contain_text("separation")
+    page.locator('[data-cl-group="embarked_missing"]').uncheck()
+    page.locator('[data-cl-group="family_size"]').check()
+    expect(page.locator("#cl-status")).to_contain_text("collinear")
+    page.locator('[data-cl-group="family_size"]').uncheck()
+    page.locator("#cl-penalty").select_option("l2")
+    page.locator('[data-lang="ru"]').click()
+    expect(page.locator("#cl-title")).to_have_text("Метрики классификации")
+    page.locator('[data-lang="en"]').click()
+    page.screenshot(path=str(screenshots / "classification-en.png"), full_page=True)
+    print("PASS: classification lab loads, feature switches refit, invalid λ ignored, separation and collinearity reported, RU/EN")
+
+
 def check_lecture_view(browser, base: str, screenshots: Path):
     context = browser.new_context(viewport={"width": 1920, "height": 1080})
     page = context.new_page()
@@ -404,10 +440,11 @@ def check_browser(base: str, executable: str | None, screenshots: Path):
         page.goto(base + "#class/not-a-class?lang=en")
         expect(page.locator("#app h1")).to_have_text("Entry not found")
         check_regression(page, base, screenshots)
+        check_classification(page, base, screenshots)
         for width in (390, 320):
             page.set_viewport_size({"width": width, "height": 844})
             for lang in ("ru", "en"):
-                for route in ("timeline", "library", "topics", "class/bayes", "regression"):
+                for route in ("timeline", "library", "topics", "class/bayes", "regression", "classification"):
                     page.goto(base + f"#{route}?lang={lang}")
                     expect(page.locator("#app h1")).to_be_visible()
                     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), (width, lang, route)

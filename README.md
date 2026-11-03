@@ -10,6 +10,7 @@ A bilingual Russian / English website for the 2024–2025 course, published at
 - **Readers:** PDF/image previews, browser-compatible HEIC copies, notebook code and saved outputs, and locally rendered mathematical formulas. Notebooks are never executed by the build or the site.
 - **Languages:** translated navigation and catalog content, with a persistent RU/EN switch and shareable language-specific links. Original attached documents retain their original language.
 - **Regression lab:** a browser-only polynomial/Fourier regression playground with editable points, freehand drawing, L1/L2 regularization, live matrices, coefficients, and diagnostics. Open `#regression?lang=en` or use the sidebar.
+- **Classification lab:** a browser-only logistic regression on the Titanic passengers with feature switches, none/L1/L2 penalties and live coefficients. Open `#classification?lang=en` or use the sidebar.
 
 ## Local use
 
