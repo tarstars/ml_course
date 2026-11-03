@@ -96,7 +96,7 @@ Rules:
 - **Fare imputation** (one test row): median training fare of the passenger's class. **Embarked imputation** (two training rows): training mode (S).
 - **Standardized** columns use training mean and standard deviation. **Binary** columns stay 0/1 so coefficients read as plain logit shifts ("female adds +2.4 to the logit").
 - Groups 8 and 10 are constant or nearly constant in training (0 and 2 rows). They are kept because the author asked for a filled-or-not feature per field, default off, and the app must handle them gracefully (§5.3). The two Embarked-missing passengers both survived, which gives perfect separation under no penalty; this is a teaching moment, not a bug, and the UI says so.
-- Group 12 is an exact affine combination of groups 5 and 6 plus the intercept, so with all three on and no penalty the design matrix is rank-deficient. It is therefore **off by default** (my call), and the app handles the rank-deficient case gracefully when a user switches it on (§5.3). Same reasoning for group 13.
+- Group 12 is an exact affine combination of groups 5 and 6 plus the intercept, so with all three on and no penalty the design matrix is rank-deficient. It is therefore **off by default** (my call), and the app handles the rank-deficient case gracefully when a user switches it on (§5.3). Group 13 is different: `is_alone` is an indicator of `family_size == 1`, not an affine combination of other columns, so the fit with it has full rank even under no penalty; it is off by default only to keep the default feature set small.
 
 ### 4.4 Output: `src/static/titanic-data.js`
 
@@ -201,7 +201,7 @@ Each row shows the formula in symbols (e.g. `TP / (TP + FP)`) and a one-line RU/
 
 A fresh reviewer read this document as a builder and asked four things; none needed the author, and they are settled above as follows:
 
-1. Family size and travelling alone are collinear with sibsp + parch under no penalty → both default off, min-norm Newton step and a status note when switched on (§4.3, §5.3).
+1. Family size is collinear with sibsp + parch under no penalty → default off, min-norm Newton step and a status note when switched on (§4.3, §5.3). Travelling alone (`is_alone`, an indicator of `family_size == 1`) is not collinear; it is default off only to keep the default feature set small.
 2. Lecture view = hidden chrome plus text scaling, no second arrangement (§5.1).
 3. Exact label-recovery rule and the location of `titanic3.csv` are now written down (§4.1, §4.2).
 4. Build and check from a clean worktree; Node 18 (§5.8).
