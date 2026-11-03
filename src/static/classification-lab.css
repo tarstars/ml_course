@@ -65,11 +65,12 @@
 .cl-grid { stroke: #e9ede5; stroke-width: 1; }
 .cl-tick { font-family: ui-monospace, monospace; fill: #263d2c; }
 .cl-axis-title, .cl-empty { fill: #3b493e; }
-.cl-region { mix-blend-mode: multiply; }
-.cl-region.cl-tp { fill: #cfe3d3; }
-.cl-region.cl-fn { fill: #e9c9b8; }
-.cl-region.cl-fp { fill: #f0d9c0; }
-.cl-region.cl-tn { fill: #e4dfec; }
+/* One tint per outcome, shared by the distribution's regions and the confusion matrix cells. */
+.cl-tp { --cl-tint: #cfe3d3; }
+.cl-fn { --cl-tint: #e9c9b8; }
+.cl-fp { --cl-tint: #f0d9c0; }
+.cl-tn { --cl-tint: #e4dfec; }
+.cl-region { mix-blend-mode: multiply; fill: var(--cl-tint); }
 .cl-bar.cl-positive { fill: #234b3b; opacity: .14; }
 .cl-bar.cl-negative { fill: #817199; opacity: .2; }
 .cl-curve { fill: none; stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
@@ -87,6 +88,47 @@
 .cl-threshold-row > label { font-size: 18px; font-weight: 600; }
 .cl-threshold-row .cl-range-row { flex: 1 1 240px; min-width: 0; }
 .cl-readout { padding: 10px 24px 20px; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; color: #12231a; }
+
+/* Confusion card: the matrix beside the metric table; they stack when there is no room for both. */
+.cl-confusion-layout { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 22px 36px; padding: 10px 24px 24px; }
+.cl-table-scroll { min-width: 0; max-width: 100%; overflow-x: auto; }
+.cl-matrix-block { flex: 0 1 400px; }
+.cl-metrics-block { flex: 1 1 600px; }
+.cl-lab table { border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.cl-confusion { width: 100%; }
+.cl-confusion caption { caption-side: top; text-align: left; padding-bottom: 10px; font-size: 16px; font-weight: 600; color: #243d2b; }
+.cl-confusion th { padding: 6px 8px; font-size: 14px; font-weight: 600; line-height: 1.3; color: #334b3a; }
+.cl-confusion thead th { text-align: center; vertical-align: bottom; }
+.cl-confusion tbody th, .cl-confusion tfoot th { text-align: right; }
+.cl-cell { padding: 10px 10px 12px; border: 3px solid var(--white); background: var(--cl-tint); text-align: center; font: 650 30px ui-monospace, monospace; color: #12231a; }
+.cl-cell::before { content: attr(data-cl-label); display: block; margin-bottom: 2px; font-size: 12px; font-weight: 600; letter-spacing: .06em; color: #3b493e; }
+.cl-total { padding: 8px; text-align: center; font: 600 16px ui-monospace, monospace; color: #3b493e; white-space: nowrap; }
+.cl-metrics { width: 100%; }
+.cl-metrics th, .cl-metrics td { padding: 7px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.cl-metrics thead th { border-bottom: 2px solid #c9d3c6; font-size: 14px; font-weight: 600; color: #3b493e; white-space: nowrap; }
+.cl-metrics tbody th { font-weight: 400; }
+.cl-metric-name { font-size: 16px; font-weight: 600; }
+.cl-metrics .cl-hint { display: block; margin-top: 2px; font-size: 13px; line-height: 1.35; }
+.cl-tag { display: inline-block; margin-left: 7px; padding: 1px 6px; border-radius: 3px; background: #f0f3ed; font-size: 12px; font-weight: 600; color: #4b5f50; white-space: nowrap; vertical-align: 1px; }
+.cl-formula { font: 14px ui-monospace, monospace; color: #334b3a; white-space: nowrap; }
+.cl-metrics .cl-value-heading, .cl-metrics td.cl-primary, .cl-metrics td.cl-secondary { text-align: right; white-space: nowrap; }
+.cl-metrics td.cl-primary { font: 650 18px ui-monospace, monospace; color: #12231a; }
+.cl-metrics td.cl-secondary { font: 15px ui-monospace, monospace; color: #5b6b5f; }
+.cl-metrics #cl-metrics-primary { color: #12231a; }
+
+/* ROC card: the plot beside its explanation, the AUC badge and the legend. */
+.cl-roc-layout { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 18px 36px; padding: 10px 24px 24px; }
+#cl-roc { display: block; flex: 0 1 480px; width: min(100%, 480px); height: auto; aspect-ratio: 1; }
+.cl-roc-text { flex: 1 1 280px; min-width: 0; max-width: 560px; padding-top: 14px; }
+.cl-roc-text p { margin-top: 14px; font-size: 17px; line-height: 1.55; }
+.cl-roc { fill: none; stroke-width: 3; stroke-linejoin: round; }
+.cl-roc.cl-primary { stroke: #234b3b; }
+.cl-roc.cl-secondary { stroke: #8a9c8e; stroke-width: 2.5; stroke-dasharray: 8 6; }
+.cl-diagonal { stroke: #b6c0b4; stroke-width: 1.5; stroke-dasharray: 4 5; }
+.cl-operating { fill: var(--accent); stroke: var(--white); stroke-width: 3; }
+.cl-roc-legend { padding: 0; margin-top: 16px; }
+.cl-swatch.cl-secondary { border-top: 3px dashed #8a9c8e; }
+.cl-dot { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); }
 
 /* Lecture view: the shared body.lr-presenting rules hide the site chrome; text follows the chosen size. */
 .cl-presentation .cl-hint { font-size: calc(16px * var(--cl-text-scale)); }
@@ -108,4 +150,14 @@
   .cl-segmented button { padding-left: 9px; padding-right: 9px; }
   .cl-legend .cl-hint { margin-left: 0; }
   .cl-readout { padding: 8px 16px 16px; font-size: 16px; }
+  .cl-confusion-layout, .cl-roc-layout { padding-left: 16px; padding-right: 16px; }
+  .cl-matrix-block, .cl-metrics-block { flex-basis: 100%; }
+  .cl-confusion th { padding: 5px 4px; font-size: 13px; }
+  .cl-cell { padding: 8px 4px 10px; font-size: 24px; }
+  .cl-total { padding: 6px 4px; font-size: 14px; }
+  .cl-metrics th, .cl-metrics td { padding: 6px 5px; }
+  .cl-metric-name { font-size: 15px; }
+  .cl-formula { font-size: 12px; white-space: normal; overflow-wrap: anywhere; }
+  .cl-metrics td.cl-primary { font-size: 16px; }
+  .cl-metrics td.cl-secondary { font-size: 13px; }
 }

@@ -43,6 +43,67 @@
     return columns.filter((_, k) => residual[k] > 1e-3 * largest);
   }
 
+  const SPLITS = ["train", "test"];
+  const other = (split) => split === "train" ? "test" : "train";
+  // The metric table in display order: key, name, formula, one-line hint (EN, RU).
+  const METRICS = [
+    ["accuracy", ["Accuracy", "Доля верных ответов (accuracy)"], "(TP + TN) / n", ["Share of all passengers the model classifies correctly.", "Доля пассажиров, для которых предсказание верно."]],
+    ["precision", ["Precision", "Точность (precision)"], "TP / (TP + FP)", ["Of the passengers predicted to survive, the share who did.", "Среди предсказанных выживших — доля действительно выживших."]],
+    ["recall", ["Recall (TPR)", "Полнота (recall, TPR)"], "TP / (TP + FN)", ["Of the passengers who survived, the share the model finds.", "Среди выживших — доля, которую модель находит."]],
+    ["specificity", ["Specificity (TNR)", "Специфичность (TNR)"], "TN / (TN + FP)", ["Of the passengers who died, the share predicted to die.", "Среди погибших — доля, для которых предсказана гибель."]],
+    ["fpr", ["False positive rate (FPR)", "Доля ложных срабатываний (FPR)"], "FP / (FP + TN)", ["Of the passengers who died, the share wrongly predicted to survive.", "Среди погибших — доля, ошибочно предсказанных выжившими."]],
+    ["fnr", ["False negative rate (FNR)", "Доля пропусков (FNR)"], "FN / (FN + TP)", ["Of the passengers who survived, the share the model misses.", "Среди выживших — доля, которую модель пропускает."]],
+    ["f1", ["F1 score", "F1-мера"], "2·P·R / (P + R)", ["Harmonic mean of precision and recall; low if either is low.", "Гармоническое среднее точности и полноты; мало, если мала хотя бы одна."]],
+    ["balancedAccuracy", ["Balanced accuracy", "Сбалансированная доля верных ответов"], "(TPR + TNR) / 2", ["Mean of recall and specificity, so the larger class does not dominate.", "Среднее полноты и специфичности: больший класс не перевешивает."]],
+    ["mcc", ["Matthews correlation (MCC)", "Корреляция Мэтьюса (MCC)"], "(TP·TN − FP·FN) / √(…)", ["Correlation between predicted and actual classes, from −1 to 1.", "Корреляция предсказанных и настоящих классов, от −1 до 1."]],
+    ["youdenJ", ["Youden's J", "Индекс Юдена (J)"], "TPR − FPR", ["Height of the operating point above the ROC diagonal.", "Высота рабочей точки над диагональю ROC."]],
+    ["npv", ["Negative predictive value (NPV)", "Точность отрицательных ответов (NPV)"], "TN / (TN + FN)", ["Of the passengers predicted to die, the share who did.", "Среди предсказанных погибших — доля действительно погибших."]],
+    ["auc", ["ROC AUC", "ROC AUC"], "∫ TPR d(FPR)", ["Chance that a random survivor scores above a random passenger who died.", "Вероятность, что случайный выживший получит оценку выше случайного погибшего."]],
+    ["logLoss", ["Log loss", "Логистические потери (log loss)"], "−mean(y log p + (1−y) log(1−p))", ["Average −log of the probability given to the true class; lower is better.", "Среднее −log вероятности, отданной настоящему классу; чем меньше, тем лучше."]],
+    ["brier", ["Brier score", "Оценка Брайера (Brier score)"], "mean((p − y)²)", ["Mean squared gap between the probability and the 0/1 outcome; lower is better.", "Средний квадрат разницы между вероятностью и исходом 0/1; чем меньше, тем лучше."]],
+  ].map(([key, name, formula, hint]) => ({ key, name, formula, hint, free: ["auc", "logLoss", "brier"].includes(key) }));
+  const metricText = (value) => value === null ? "—" : value.toFixed(3);
+  // The selected split's (FPR, TPR) at the current threshold; a rate with an empty denominator is drawn at 0.
+  const operatingPoint = ({ tp, fn, fp, tn }) => ({ fpr: fp + tn ? fp / (fp + tn) : 0, tpr: tp + fn ? tp / (tp + fn) : 0 });
+
+  // Card 03: the confusion matrix beside the metric table. The structure is static; mount fills in the numbers.
+  function confusionMarkup(w) {
+    const cell = (key) => `<td id="cl-${key}" class="cl-cell cl-${key}" data-cl-label="${key.toUpperCase()}"></td>`;
+    const rows = METRICS.map(({ key, name, formula, hint, free }) => {
+      const tip = esc(w(...hint));
+      const tag = free ? `<span class="cl-tag">${w("threshold-free", "не зависит от порога")}</span>` : "";
+      return `<tr data-cl-metric="${key}"><th scope="row" title="${tip}"><span class="cl-metric-name">${esc(w(...name))}</span>${tag}<span class="cl-hint">${tip}</span></th><td class="cl-formula">${esc(formula)}</td><td class="cl-primary"></td><td class="cl-secondary"></td></tr>`;
+    }).join("");
+    return `<section class="cl-card" id="cl-confusion-card" aria-labelledby="cl-confusion-title">
+        <div class="cl-card-heading"><h2 id="cl-confusion-title">03 · ${w("Confusion matrix and metrics", "Матрица ошибок и метрики")}</h2></div>
+        <div class="cl-confusion-layout">
+          <div class="cl-table-scroll cl-matrix-block"><table id="cl-confusion" class="cl-confusion"><caption id="cl-confusion-caption"></caption>
+            <thead><tr><td></td><th scope="col">${w("Predicted survived", "Предсказано: выжил")}</th><th scope="col">${w("Predicted died", "Предсказано: погиб")}</th><th scope="col">${w("Total", "Всего")}</th></tr></thead>
+            <tbody><tr><th scope="row">${w("Actually survived", "На самом деле: выжил")}</th>${cell("tp")}${cell("fn")}<td id="cl-actual-positive" class="cl-total"></td></tr>
+            <tr><th scope="row">${w("Actually died", "На самом деле: погиб")}</th>${cell("fp")}${cell("tn")}<td id="cl-actual-negative" class="cl-total"></td></tr></tbody>
+            <tfoot><tr><th scope="row">${w("Total", "Всего")}</th><td id="cl-predicted-positive" class="cl-total"></td><td id="cl-predicted-negative" class="cl-total"></td><td id="cl-n" class="cl-total"></td></tr></tfoot>
+          </table></div>
+          <div class="cl-table-scroll cl-metrics-block"><table id="cl-metrics" class="cl-metrics">
+            <thead><tr><th scope="col">${w("Metric", "Метрика")}</th><th scope="col">${w("Formula", "Формула")}</th><th scope="col" id="cl-metrics-primary" class="cl-value-heading"></th><th scope="col" id="cl-metrics-secondary" class="cl-value-heading"></th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table></div>
+        </div>
+      </section>`;
+  }
+  // Card 04: the ROC plot beside its explanation, the AUC badge and the legend.
+  function rocMarkup(w) {
+    return `<section class="cl-card" id="cl-roc-card" aria-labelledby="cl-roc-title">
+        <div class="cl-card-heading"><h2 id="cl-roc-title">04 · ${w("ROC curve", "ROC-кривая")}</h2></div>
+        <div class="cl-roc-layout">
+          <svg id="cl-roc" viewBox="0 0 480 480" role="img" aria-label="${w("ROC curves of the selected split (solid) and the other split (dashed), with a dot at the current threshold.", "ROC-кривые выбранной выборки (сплошная) и другой выборки (пунктир); точка — текущий порог.")}"></svg>
+          <div class="cl-roc-text"><span id="cl-auc" class="cl-badge"></span>
+            <p>${w("Every threshold gives one (FPR, TPR) pair; sweeping it traces the curve. AUC is the area under it: the probability that a random survivor scores above a random non-survivor.", "Каждый порог даёт одну пару (FPR, TPR); если пройти порогом по всем значениям, получится кривая. AUC — площадь под ней: вероятность того, что случайный выживший получит оценку выше случайного погибшего.")}</p>
+            <div class="cl-legend cl-roc-legend"><span><i class="cl-swatch"></i><span id="cl-roc-primary"></span></span><span><i class="cl-swatch cl-secondary"></i><span id="cl-roc-secondary"></span></span><span><i class="cl-dot"></i>${w("Current threshold", "Текущий порог")}</span></div>
+          </div>
+        </div>
+      </section>`;
+  }
+
   function html(language) {
     const w = (en, ru) => language === "en" ? en : ru;
     const groups = D.groups.map((group) => {
@@ -75,8 +136,8 @@
         <div class="cl-threshold-row"><label for="cl-threshold">${w("Threshold", "Порог")}</label><div class="cl-range-row"><input id="cl-threshold-range" type="range" aria-label="${w("Threshold slider", "Ползунок порога")}"><input id="cl-threshold" type="number" required></div></div>
         <p id="cl-readout" class="cl-readout" aria-live="polite"></p>
       </section>
-      <section class="cl-card" id="cl-confusion-card"></section>
-      <section class="cl-card" id="cl-roc-card"></section>
+      ${confusionMarkup(w)}
+      ${rocMarkup(w)}
     </section>`;
   }
 
@@ -85,8 +146,19 @@
     const $ = (selector) => root.querySelector(selector);
     const controller = new AbortController();
     const listen = (type, handler, target = root) => target.addEventListener(type, handler, { signal: controller.signal });
-    const plot = $("#cl-plot");
-    let columns = [], model, logits, probabilities, logitRange, classes = null, frame = 0, thresholdFrame = 0, drag = null;
+    const plot = $("#cl-plot"), rocSvg = $("#cl-roc");
+    // The metric table's value cells, updated in place on every threshold move.
+    const metricCells = METRICS.map(({ key }) => {
+      const row = $(`[data-cl-metric="${key}"]`);
+      return { key, primary: row.querySelector(".cl-primary"), secondary: row.querySelector(".cl-secondary") };
+    });
+    const splitName = (split) => split === "train" ? w("Train", "Обучение") : w("Test", "Тест");
+    // Two decimals; the Russian text uses a decimal comma.
+    const number = (value) => {
+      const text = (Math.abs(value) < 0.005 ? 0 : value).toFixed(2);
+      return language === "en" ? text : text.replace(".", ",");
+    };
+    let columns = [], model, logits, probabilities, logitRange, fixed, classes = null, frame = 0, thresholdFrame = 0, drag = null;
     function refit() {
       columns = activeColumns();
       model = M.fit(D.train.X, D.train.y, { penalty: state.penalty, lambda: state.lambda, columns });
@@ -95,6 +167,12 @@
         test: M.scores(D.test.X, model.weights, model.intercept),
       };
       probabilities = { train: M.probabilities(logits.train), test: M.probabilities(logits.test) };
+      // What does not depend on the threshold, per split: the ROC curve with its AUC, log loss and Brier score.
+      fixed = Object.fromEntries(SPLITS.map((split) => [split, {
+        roc: M.roc(logits[split], D[split].y),
+        logLoss: M.logLoss(probabilities[split], D[split].y),
+        brier: M.brier(probabilities[split], D[split].y),
+      }]));
       // The logit axis spans the training scores padded by 5 %, so switching the split keeps the axis.
       const lo = Math.min(...logits.train), hi = Math.max(...logits.train), pad = hi > lo ? 0.05 * (hi - lo) : 1;
       logitRange = [Math.max(-8, lo - pad), Math.min(8, hi + pad)];
@@ -168,15 +246,48 @@
     function readout() {
       const p = probabilities[state.split];
       const predicted = p.reduce((count, value) => count + (value >= state.threshold ? 1 : 0), 0);
-      // Two decimals; the Russian readout uses a decimal comma.
-      const number = (value) => {
-        const text = (Math.abs(value) < 0.005 ? 0 : value).toFixed(2);
-        return language === "en" ? text : text.replace(".", ",");
-      };
       const t = number(state.threshold), z = number(M.logit(state.threshold));
       $("#cl-readout").textContent = w(`p ≥ ${t} (logit ≥ ${z}): ${predicted} predicted survivors of ${p.length}`, `p ≥ ${t} (логит ≥ ${z}): ${predicted} предсказанных выживших из ${p.length}`);
     }
-    // Everything that follows the threshold, without refitting. Task 9: the confusion matrix, metrics and ROC operating point go here.
+    // Confusion counts and every metric for both splits at the current threshold: O(n) per split.
+    function outcomes() {
+      const cut = M.logit(state.threshold);
+      return Object.fromEntries(SPLITS.map((split) => {
+        const counts = M.confusion(logits[split], D[split].y, cut), { roc, logLoss, brier } = fixed[split];
+        return [split, { counts, values: { ...M.metrics(counts), auc: roc.auc, logLoss, brier } }];
+      }));
+    }
+    function confusionCard({ tp, fn, fp, tn }) {
+      const cells = { "#cl-tp": tp, "#cl-fn": fn, "#cl-fp": fp, "#cl-tn": tn, "#cl-actual-positive": tp + fn, "#cl-actual-negative": fp + tn,
+        "#cl-predicted-positive": tp + fp, "#cl-predicted-negative": fn + tn, "#cl-n": `n = ${tp + fn + fp + tn}` };
+      for (const [id, value] of Object.entries(cells)) $(id).textContent = value;
+      const t = number(state.threshold);
+      $("#cl-confusion-caption").textContent = state.split === "train"
+        ? w(`Train split · threshold p ≥ ${t}`, `Обучающая выборка · порог p ≥ ${t}`)
+        : w(`Test split · threshold p ≥ ${t}`, `Тестовая выборка · порог p ≥ ${t}`);
+    }
+    // The primary column is always the selected split.
+    function metricsCard(outcome) {
+      const primary = outcome[state.split].values, secondary = outcome[other(state.split)].values;
+      $("#cl-metrics-primary").textContent = splitName(state.split);
+      $("#cl-metrics-secondary").textContent = splitName(other(state.split));
+      for (const cell of metricCells) {
+        cell.primary.textContent = metricText(primary[cell.key]);
+        cell.secondary.textContent = metricText(secondary[cell.key]);
+      }
+    }
+    function rocCard(counts) {
+      rocSvg.innerHTML = P.rocPlot({
+        primary: fixed[state.split].roc.points, secondary: fixed[other(state.split)].roc.points, operating: operatingPoint(counts),
+        fontSize: parseFloat(getComputedStyle(rocSvg).getPropertyValue("--cl-plot-font")) || 16,
+        labels: { x: w("False positive rate", "Доля ложных срабатываний"), y: w("True positive rate", "Доля верных срабатываний") },
+      });
+      $("#cl-roc-primary").textContent = splitName(state.split);
+      $("#cl-roc-secondary").textContent = splitName(other(state.split));
+      const auc = (split) => fixed[split].roc.auc.toFixed(2);
+      $("#cl-auc").textContent = w(`AUC train ${auc("train")} · test ${auc("test")}`, `AUC обучение ${auc("train")} · тест ${auc("test")}`);
+    }
+    // Everything that follows the threshold, without refitting.
     function renderThreshold() {
       if (thresholdFrame) cancelAnimationFrame(thresholdFrame);
       thresholdFrame = 0;
@@ -185,6 +296,10 @@
       $("#cl-threshold").value = value;
       distribution();
       readout();
+      const outcome = outcomes();
+      confusionCard(outcome[state.split].counts);
+      metricsCard(outcome);
+      rocCard(outcome[state.split].counts);
     }
     // Pointer drags and slider input render at most once per frame.
     const scheduleThreshold = () => { if (!thresholdFrame) thresholdFrame = requestAnimationFrame(renderThreshold); };

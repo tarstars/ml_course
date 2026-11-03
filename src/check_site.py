@@ -277,11 +277,37 @@ def check_classification(page, base: str, screenshots: Path):
     moved = float(page.locator("#cl-threshold").input_value())
     assert 0.3 < moved < 0.7, moved                                      # the plot's centre is p ≈ 0.475, not the 0.818 set before
     page.locator("#cl-threshold").fill("0.5"); page.locator("#cl-threshold").press("Tab")
+    cells = [int(page.locator(f"#cl-{k}").text_content()) for k in ("tp", "fn", "fp", "tn")]
+    assert sum(cells) == 891, cells
+    ref = page.evaluate("ML_TITANIC.reference.train.confusion")
+    assert cells == [ref["tp"], ref["fn"], ref["fp"], ref["tn"]], (cells, ref)
+    auc_text = page.locator("#cl-auc").text_content()
+    assert f"{page.evaluate('ML_TITANIC.reference.train.auc'):.2f}" in auc_text, auc_text
+    assert f"{page.evaluate('ML_TITANIC.reference.test.auc'):.2f}" in auc_text, auc_text
+    expect(page.locator("#cl-metrics tr[data-cl-metric]")).to_have_count(14)
+    point_before = page.locator("#cl-operating-point").get_attribute("cx")
+    page.locator("#cl-threshold").fill("0.9"); page.locator("#cl-threshold").press("Tab")
+    assert page.locator("#cl-operating-point").get_attribute("cx") != point_before
+    assert sum(int(page.locator(f"#cl-{k}").text_content()) for k in ("tp", "fn", "fp", "tn")) == 891
+    page.locator("#cl-threshold").fill("0.5"); page.locator("#cl-threshold").press("Tab")
+    page.locator('#cl-split [data-cl-split="test"]').click()
+    assert sum(int(page.locator(f"#cl-{k}").text_content()) for k in ("tp", "fn", "fp", "tn")) == 418
+    page.locator('#cl-split [data-cl-split="train"]').click()
+    for group_id in ("pclass", "sex", "age", "age_missing", "sibsp", "parch", "fare", "embarked", "title", "cabin_known"): page.locator(f'[data-cl-group="{group_id}"]').uncheck()   # intercept-only: every p = 342/891 ≈ 0.384
+    expect(lab).to_have_attribute("data-cl-columns", "0")
+    expect(page.locator('[data-cl-metric="auc"] .cl-primary')).to_have_text("0.500")
+    expect(page.locator("#cl-tp")).to_have_text("0")                                      # nobody reaches p ≥ 0.5
+    expect(page.locator('[data-cl-metric="precision"] .cl-primary')).to_have_text("—")
+    expect(page.locator('[data-cl-metric="f1"] .cl-primary')).to_have_text("—")
+    page.locator("#cl-threshold").fill("0.3"); page.locator("#cl-threshold").press("Tab")  # everybody predicted positive
+    expect(page.locator('[data-cl-metric="npv"] .cl-primary')).to_have_text("—")
+    page.reload()                                                                         # restore defaults
+    expect(lab).to_have_attribute("data-cl-columns", "15")
     page.locator('[data-lang="ru"]').click()
     expect(page.locator("#cl-title")).to_have_text("Метрики классификации")
     page.locator('[data-lang="en"]').click()
     page.screenshot(path=str(screenshots / "classification-en.png"), full_page=True)
-    print("PASS: classification lab loads, feature switches refit, invalid λ ignored, separation and collinearity reported, score distribution with axis toggle, threshold slider, plot click and train/test switch, RU/EN")
+    print("PASS: classification lab loads, feature switches refit, invalid λ ignored, separation and collinearity reported, score distribution with axis toggle, threshold slider, plot click and train/test switch, confusion matrix, metric table with undefined values, ROC curve and operating point, RU/EN")
 
 
 def check_lecture_view(browser, base: str, screenshots: Path):
