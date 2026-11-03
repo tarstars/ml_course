@@ -6,3 +6,4 @@ dist/
 .pytest_cache/
 test-results/
 .superpowers/
+.worktrees/
