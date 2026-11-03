@@ -59,9 +59,27 @@
     return [left, right];
   }
 
+  // The expensive part of the distribution plot: per-class histogram counts and KDE curves scaled to
+  // counts per bin. It depends only on the scores, the axis and the range, so a caller can compute it
+  // once and pass it back as `layers` while only the threshold moves.
+  function distributionLayers(o) {
+    const [lo, hi] = o.range, binWidth = (hi - lo) / o.bins;
+    const edges = Array.from({ length: o.bins + 1 }, (_, i) => lo + i * binWidth);
+    const grid = Array.from({ length: gridPoints }, (_, i) => lo + (i / (gridPoints - 1)) * (hi - lo));
+    const classes = ["positive", "negative"].map((name) => {
+      const values = name === "positive" ? o.positives : o.negatives;
+      const counts = values.length ? MathApi.histogram(values, edges) : Array(o.bins).fill(0);
+      const density = values.length
+        ? MathApi.kde(values, grid, MathApi.silverman(values), o.axis === "probability" ? o.range : undefined)
+        : Array(gridPoints).fill(0);
+      return { name, counts, curve: density.map((d) => d * values.length * binWidth), total: Math.max(0, ...counts) };
+    });
+    return { empty: !o.positives.length && !o.negatives.length, edges, grid, classes };
+  }
+
   function distributionPlot(o) {
     const { box } = DISTRIBUTION, fs = o.fontSize, lab = o.labels;
-    const n = { positive: o.positives.length, negative: o.negatives.length };
+    const layers = o.layers || distributionLayers(o);
     const sx = scale(o.range, box);
     const out = [];
     const axes = (yMax) => {
@@ -81,23 +99,13 @@
       out.push(text(16, cy, lab.y, fs, "cl-axis-title", "middle", ` transform="rotate(-90 16 ${cy})"`));
       return sy;
     };
-    if (!n.positive && !n.negative) {
+    if (layers.empty) {
       axes(1);
       out.push(text((box.left + box.right) / 2, (box.top + box.bottom) / 2, lab.empty, fs, "cl-empty", "middle"));
       return out.join("\n");
     }
 
-    const [lo, hi] = o.range, binWidth = (hi - lo) / o.bins;
-    const edges = Array.from({ length: o.bins + 1 }, (_, i) => lo + i * binWidth);
-    const grid = Array.from({ length: gridPoints }, (_, i) => lo + (i / (gridPoints - 1)) * (hi - lo));
-    const classes = ["positive", "negative"].map((name) => {
-      const values = name === "positive" ? o.positives : o.negatives;
-      const counts = values.length ? MathApi.histogram(values, edges) : Array(o.bins).fill(0);
-      const density = values.length
-        ? MathApi.kde(values, grid, MathApi.silverman(values), o.axis === "probability" ? o.range : undefined)
-        : Array(gridPoints).fill(0);
-      return { name, counts, curve: density.map((d) => d * values.length * binWidth), total: Math.max(0, ...counts) };
-    });
+    const { edges, grid, classes } = layers;
     const yMax = Math.max(1, 1.08 * Math.max(...classes.flatMap((c) => [...c.counts, ...c.curve])));
     const sy = axes(yMax);
     const baseline = box.bottom;
@@ -145,7 +153,7 @@
     return out.join("\n");
   }
 
-  const api = { DISTRIBUTION, ROC, scale, distributionPlot, rocPlot };
+  const api = { DISTRIBUTION, ROC, scale, distributionLayers, distributionPlot, rocPlot };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.MLClassificationPlots = api;
 })(typeof window !== "undefined" ? window : globalThis);

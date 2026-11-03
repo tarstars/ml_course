@@ -142,12 +142,14 @@
       return Math.min(max, Math.max(min, Number((Math.round(value / step) * step).toFixed(3))));
     };
     const moveTo = (value) => { state.threshold = fromShown(snap(value)); };
-    // The selected split's scores on the displayed axis, by class; kept until the next refit, axis or split change.
+    // The selected split's scores on the displayed axis by class, with their histograms and KDE curves;
+    // kept until the next refit, axis or split change, so a threshold move only redraws.
     function classScores() {
       if (!classes) {
         const values = state.axis === "logit" ? logits[state.split] : probabilities[state.split];
         const y = D[state.split].y;
-        classes = { positives: values.filter((_, i) => y[i] === 1), negatives: values.filter((_, i) => y[i] === 0) };
+        const positives = values.filter((_, i) => y[i] === 1), negatives = values.filter((_, i) => y[i] === 0);
+        classes = { positives, negatives, layers: P.distributionLayers({ axis: state.axis, range: range(), bins: 40, positives, negatives }) };
       }
       return classes;
     }
