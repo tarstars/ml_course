@@ -135,12 +135,12 @@ const svg = P.distributionPlot({ axis: "logit", range: [-6, 6], bins: 40, positi
 assert.equal((svg.match(/class="cl-curve cl-positive"/g) || []).length, 1);
 assert.equal((svg.match(/class="cl-curve cl-negative"/g) || []).length, 1);
 ["cl-tp", "cl-fn", "cl-fp", "cl-tn"].forEach((k) => assert.ok(svg.includes(`class="cl-region ${k}"`), k));
-assert.ok(svg.includes(`id="cl-threshold-line" class="cl-threshold" x1="${sx.px(0)}"`));
+assert.ok(svg.includes(`id="cl-threshold-line" x1="${sx.px(0)}"`));
 assert.ok((svg.match(/class="cl-bar cl-positive"/g) || []).length >= 3);
 assert.ok(P.distributionPlot({ axis: "probability", range: [0, 1], bins: 40, positives: [], negatives: [], threshold: 0.5, fontSize: 16,
   labels: { positive: "", negative: "", x: "", y: "", empty: "no data" } }).includes("no data"));
 const rocSvg = P.rocPlot({ primary: [{ fpr: 0, tpr: 0 }, { fpr: 0.2, tpr: 0.8 }, { fpr: 1, tpr: 1 }], secondary: null, operating: { fpr: 0.2, tpr: 0.8 }, fontSize: 16, labels: { x: "FPR", y: "TPR" } });
 const rx = P.scale([0, 1], P.ROC.box);
-assert.ok(rocSvg.includes(`id="cl-operating-point" class="cl-operating" cx="${rx.px(0.2)}"`));
+assert.ok(rocSvg.includes(`id="cl-operating-point" cx="${rx.px(0.2)}"`));
 assert.ok(!rocSvg.includes("cl-secondary"));
 console.log("PASS: closed-form fit, intercept only, L2 optimality, L1 KKT and exact zeros, separation, constant and collinear columns, minimum-norm solve, reference reproduction, shipped edge cases, confusion matrix, metrics with null denominators, ROC and AUC, log loss and Brier, histogram, Silverman bandwidth and reflected KDE, distribution and ROC SVG builders");

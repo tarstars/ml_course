@@ -119,7 +119,7 @@
     classes.forEach((c) => out.push(`<path class="cl-curve cl-${c.name}" d="${linePath(points(c))}"/>`));
 
     const tx = sx.px(o.threshold);
-    out.push(`<line id="cl-threshold-line" class="cl-threshold" x1="${tx}" x2="${tx}" y1="${box.top}" y2="${box.bottom}"/>`);
+    out.push(`<line id="cl-threshold-line" x1="${tx}" x2="${tx}" y1="${box.top}" y2="${box.bottom}" class="cl-threshold"/>`);
     out.push(`<g id="cl-threshold-handle" class="cl-handle" tabindex="0" transform="translate(${tx}, ${box.top})"><circle r="9"/></g>`);
     return out.join("\n");
   }
@@ -141,7 +141,7 @@
     const curve = (pts) => linePath(pts.map((p) => [sx.px(p.fpr), sy.px(p.tpr)]));
     if (Array.isArray(o.secondary) && o.secondary.length) out.push(`<path class="cl-roc cl-secondary" d="${curve(o.secondary)}"/>`);
     out.push(`<path class="cl-roc cl-primary" d="${curve(o.primary)}"/>`);
-    out.push(`<circle id="cl-operating-point" class="cl-operating" cx="${sx.px(o.operating.fpr)}" cy="${sy.px(o.operating.tpr)}" r="7"/>`);
+    out.push(`<circle id="cl-operating-point" cx="${sx.px(o.operating.fpr)}" cy="${sy.px(o.operating.tpr)}" r="7" class="cl-operating"/>`);
     return out.join("\n");
   }
 
