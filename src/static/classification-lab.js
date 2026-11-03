@@ -160,16 +160,16 @@
     };
     let columns = [], model, logits, probabilities, logitRange, fixed, classes = null, frame = 0, thresholdFrame = 0, drag = null;
     // --cl-plot-font is a size on screen, but the plots draw in viewBox units: divide it by each SVG's scale.
-    // The plot margins grow with the font; 48 units keeps them from eating a small plot. Measured on
-    // presentation changes and resizes.
-    const fonts = new Map();
+    // The plot margins grow with the font; a cap per plot keeps them from eating a small plot (the wide
+    // distribution keeps its height on phones at 36 units). Measured on presentation changes and resizes.
+    const fonts = new Map(), maxFont = new Map([[plot, 36], [rocSvg, 48]]);
     function measureFonts() {
       let changed = false;
       for (const svg of [plot, rocSvg]) {
         const { width, height } = svg.getBoundingClientRect(), box = svg.viewBox.baseVal;
         const px = parseFloat(getComputedStyle(svg).getPropertyValue("--cl-plot-font")) || 16;
         const scale = Math.min(width / box.width, height / box.height);
-        const font = Math.min(48, scale > 0 ? px / scale : 16);
+        const font = Math.min(maxFont.get(svg), scale > 0 ? px / scale : 16);
         if (font !== fonts.get(svg)) { fonts.set(svg, font); changed = true; }
       }
       return changed;
