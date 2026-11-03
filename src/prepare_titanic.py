@@ -1,6 +1,6 @@
 """Prepare the Titanic data asset for the classification metrics lab.
 
-Command line (completed in a later task):
+Command line:
 
     uv run python src/prepare_titanic.py --train train.csv --test test.csv \
         --titanic3 titanic3.csv --out <output.js>
@@ -10,13 +10,16 @@ titanic3 dataset: https://hbiostat.org/data/repo/titanic3.csv
 """
 from __future__ import annotations
 
+import argparse
 import csv
+import json
 import math
 import re
 import statistics
 import sys
 from collections import Counter
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 
 KNOWN_TITLES = {"Mr", "Mrs", "Miss", "Master"}
@@ -195,8 +198,207 @@ def design_row(row: dict, stats: TrainingStats) -> list[float]:
     return out
 
 
+def _objective(X: list[list[float]], y: list[int], lam: float, params: list[float]) -> float:
+    """Sum of logistic losses plus (lam / 2) * ||w||^2; params = weights followed by the intercept."""
+    *w, b = params
+    total = 0.0
+    for row, label in zip(X, y):
+        z = sum(wj * xj for wj, xj in zip(w, row)) + b
+        margin = z if label else -z
+        total += max(0.0, -margin) + math.log1p(math.exp(-abs(z)))
+    return total + 0.5 * lam * sum(wj * wj for wj in w)
+
+
+def _sigmoid(z: float) -> float:
+    if z >= 0:
+        return 1.0 / (1.0 + math.exp(-z))
+    e = math.exp(z)
+    return e / (1.0 + e)
+
+
+def _solve(matrix: list[list[float]], rhs: list[float]) -> list[float]:
+    """Gaussian elimination with partial pivoting."""
+    n = len(rhs)
+    a = [row[:] + [rhs[i]] for i, row in enumerate(matrix)]
+    for col in range(n):
+        pivot = max(range(col, n), key=lambda r: abs(a[r][col]))
+        if abs(a[pivot][col]) < 1e-12:
+            raise RuntimeError("singular Hessian")
+        a[col], a[pivot] = a[pivot], a[col]
+        for r in range(col + 1, n):
+            factor = a[r][col] / a[col][col]
+            if factor:
+                for c in range(col, n + 1):
+                    a[r][c] -= factor * a[col][c]
+    x = [0.0] * n
+    for r in range(n - 1, -1, -1):
+        x[r] = (a[r][n] - sum(a[r][c] * x[c] for c in range(r + 1, n))) / a[r][r]
+    return x
+
+
+def fit_logistic_l2(X: list[list[float]], y: list[int], lam: float) -> tuple[list[float], float]:
+    """L2-regularized logistic regression by Newton's method; the intercept is not penalized."""
+    p = len(X[0])
+    params = [0.0] * (p + 1)
+    penalty = [lam] * p + [0.0]
+    current = _objective(X, y, lam, params)
+    for _ in range(100):
+        grad = [penalty[j] * params[j] for j in range(p + 1)]
+        hess = [[0.0] * (p + 1) for _ in range(p + 1)]
+        for row, label in zip(X, y):
+            xi = row + [1.0]
+            prob = _sigmoid(sum(params[j] * xi[j] for j in range(p + 1)))
+            weight = prob * (1.0 - prob)
+            for j in range(p + 1):
+                grad[j] += (prob - label) * xi[j]
+                if xi[j]:
+                    for k in range(p + 1):
+                        hess[j][k] += weight * xi[j] * xi[k]
+        for j in range(p + 1):
+            hess[j][j] += penalty[j]
+        step = _solve(hess, grad)
+        scale = 1.0
+        candidate, value = params, current
+        for _ in range(60):
+            candidate = [params[j] - scale * step[j] for j in range(p + 1)]
+            value = _objective(X, y, lam, candidate)
+            if value < current:
+                break
+            scale /= 2.0
+        else:
+            candidate, value = params, current  # no decrease possible: at the optimum
+        change = current - value
+        params, current = candidate, value
+        if change < 1e-10:
+            return params[:p], params[p]
+    raise RuntimeError("Newton's method did not converge in 100 iterations")
+
+
+def log_loss(probabilities: list[float], y: list[int]) -> float:
+    total = 0.0
+    for prob, label in zip(probabilities, y):
+        prob = min(max(prob, 1e-15), 1.0 - 1e-15)
+        z = math.log(prob / (1.0 - prob))
+        margin = z if label else -z
+        total += max(0.0, -margin) + math.log1p(math.exp(-abs(z)))
+    return total / len(y)
+
+
+def auc(scores: list[float], y: list[int]) -> float:
+    """Rank statistic (Mann-Whitney U) with average ranks for tied scores."""
+    order = sorted(range(len(scores)), key=lambda i: scores[i])
+    ranks = [0.0] * len(scores)
+    i = 0
+    while i < len(order):
+        j = i
+        while j + 1 < len(order) and scores[order[j + 1]] == scores[order[i]]:
+            j += 1
+        for k in range(i, j + 1):
+            ranks[order[k]] = (i + j) / 2.0 + 1.0
+        i = j + 1
+    positives = sum(y)
+    negatives = len(y) - positives
+    rank_sum = sum(rank for rank, label in zip(ranks, y) if label)
+    return (rank_sum - positives * (positives + 1) / 2.0) / (positives * negatives)
+
+
+def confusion(scores: list[float], y: list[int], threshold: float) -> dict[str, int]:
+    counts = {"tp": 0, "fn": 0, "fp": 0, "tn": 0}
+    for score, label in zip(scores, y):
+        positive = score >= threshold
+        key = ("tp" if positive else "fn") if label else ("fp" if positive else "tn")
+        counts[key] += 1
+    return counts
+
+
+def _clean(value: float, digits: int = 6) -> float:
+    return round(value, digits) + 0.0  # + 0.0 turns -0.0 into 0.0
+
+
+def _evaluate(X, y, weights, intercept) -> dict:
+    probs = [_sigmoid(sum(w * x for w, x in zip(weights, row)) + intercept) for row in X]
+    return {"log_loss": _clean(log_loss(probs, y)), "auc": _clean(auc(probs, y)),
+            "confusion": confusion(probs, y, 0.5)}
+
+
+def build_dataset(train_rows: list[dict], test_rows: list[dict], titanic3_rows: list[dict]) -> dict:
+    """Assemble the ML_TITANIC object, including the reference fit on the default-on groups."""
+    if (len(train_rows), len(test_rows)) != (891, 418):
+        raise ValueError(f"unexpected row counts {len(train_rows)}/{len(test_rows)}")
+    verify_train_labels(train_rows, titanic3_rows)
+    y_train = [int(row["Survived"]) for row in train_rows]
+    y_test = recover_labels(test_rows, titanic3_rows)
+    if (sum(y_train), sum(y_test)) != (342, 158):
+        raise ValueError(f"unexpected positives {sum(y_train)}/{sum(y_test)}")
+    stats = training_stats(train_rows)
+    X_train = [design_row(row, stats) for row in train_rows]
+    X_test = [design_row(row, stats) for row in test_rows]
+    if not all(math.isfinite(v) for row in X_train + X_test for v in row):
+        raise ValueError("non-finite value in the design matrix")
+
+    groups = [g["id"] for g in GROUPS if g["default_on"]]
+    wanted = {c for g in GROUPS if g["default_on"] for c in g["columns"]}
+    index = [i for i, c in enumerate(COLUMNS) if c in wanted]
+    columns = [COLUMNS[i] for i in index]
+    sub_train = [[row[i] for i in index] for row in X_train]
+    sub_test = [[row[i] for i in index] for row in X_test]
+    weights, intercept = fit_logistic_l2(sub_train, y_train, 1.0)
+    weights = [_clean(w) for w in weights]
+    intercept = _clean(intercept)
+    return {
+        "schema": 1,
+        "columns": COLUMNS,
+        "groups": GROUPS,
+        "train": {"X": X_train, "y": y_train},
+        "test": {"X": X_test, "y": y_test},
+        "meta": {
+            "source": [
+                "Kaggle Titanic train.csv and test.csv",
+                "Vanderbilt titanic3.csv (https://hbiostat.org/data/repo/titanic3.csv), "
+                "originally from Encyclopedia Titanica",
+            ],
+            "prepared_at": date.today().isoformat(),
+            "counts": {"train": len(y_train), "test": len(y_test),
+                       "train_positive": sum(y_train), "test_positive": sum(y_test)},
+            "imputation": {"age_by_title": stats.age_by_title, "fare_by_class": stats.fare_by_class,
+                           "embarked_mode": stats.embarked_mode},
+            "scaling": {c: {"mean": stats.scaling[c][0], "std": stats.scaling[c][1]} for c in STANDARDIZED},
+        },
+        "reference": {
+            "groups": groups, "penalty": "l2", "lambda": 1, "columns": columns,
+            "weights": weights, "intercept": intercept,
+            "train": _evaluate(sub_train, y_train, weights, intercept),
+            "test": _evaluate(sub_test, y_test, weights, intercept),
+        },
+    }
+
+
+def render_js(dataset: dict) -> str:
+    payload = json.dumps(dataset, separators=(",", ":"), ensure_ascii=False)
+    header = f"/* Generated by src/prepare_titanic.py on {dataset['meta']['prepared_at']}. Do not edit by hand. */"
+    return (header + "\n(function (root) { const data = " + payload + "; "
+            'if (typeof module !== "undefined" && module.exports) module.exports = data; '
+            "else root.ML_TITANIC = data; })"
+            '(typeof window !== "undefined" ? window : globalThis);\n')
+
+
 def main(argv: list[str]) -> int:
-    return 2
+    parser = argparse.ArgumentParser(description="Prepare the Titanic data asset.")
+    for flag in ("--train", "--test", "--titanic3", "--out"):
+        parser.add_argument(flag, type=Path, required=True)
+    args = parser.parse_args(argv)
+    data = build_dataset(read_rows(args.train.expanduser()), read_rows(args.test.expanduser()),
+                         read_rows(args.titanic3.expanduser()))
+    meta = data["meta"]
+    print("counts:", meta["counts"])
+    print("imputation:", json.dumps(meta["imputation"]))
+    print("scaling:", json.dumps(meta["scaling"]))
+    ref = data["reference"]
+    print(f"reference AUC: train {ref['train']['auc']:.4f}, test {ref['test']['auc']:.4f}")
+    out = args.out.expanduser()
+    out.write_text(render_js(data), encoding="utf-8")
+    print(f"wrote {out} ({out.stat().st_size} bytes)")
+    return 0
 
 
 if __name__ == "__main__":
