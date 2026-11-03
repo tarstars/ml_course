@@ -89,6 +89,14 @@
 .cl-threshold-row > label { font-size: 18px; font-weight: 600; }
 .cl-threshold-row .cl-range-row { flex: 1 1 240px; min-width: 0; }
 .cl-readout { padding: 10px 24px 20px; font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; color: #12231a; }
+/* The dock sits under the plot and sticks to the top while cards 03 and 04 are on screen, so the threshold and the model can be changed from anywhere. */
+.cl-dock { position: sticky; top: 0; z-index: 30; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 28px; margin: 14px 0 20px; padding: 10px 24px; border: 1px solid var(--line); border-radius: 10px; background: var(--white); box-shadow: 0 8px 20px rgba(35, 75, 59, .1); }
+.cl-dock .cl-threshold-row { flex: 1 1 320px; padding: 0; }
+.cl-dock-model { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.cl-dock-model > label { font-size: 16px; font-weight: 600; }
+.cl-dock-model select { width: auto; min-width: 88px; height: 40px; font-size: 16px; }
+.cl-dock-model .cl-range-row { flex: 0 1 250px; width: 250px; min-width: 0; height: 40px; }
+.cl-dock-model .cl-range-row input[type="number"] { width: 90px; height: 40px; font-size: 17px; }
 
 /* Confusion card: the matrix beside the metric table; they stack when there is no room for both. */
 .cl-confusion-layout { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 22px 36px; padding: 10px 24px 24px; }
@@ -159,6 +167,10 @@
 .cl-presentation .cl-legend { font-size: var(--cl-small); }
 .cl-presentation .cl-threshold-row > label { font-size: var(--cl-label); }
 .cl-presentation .cl-readout { font-size: calc(24px * var(--cl-text-scale)); }
+.cl-presentation .cl-dock-model > label { font-size: var(--cl-label); }
+.cl-presentation .cl-dock-model select { font-size: var(--cl-small); height: 44px; }
+.cl-presentation .cl-dock-model .cl-range-row { flex-basis: calc(250px * var(--cl-text-scale)); width: calc(250px * var(--cl-text-scale)); height: auto; min-height: 44px; }
+.cl-presentation .cl-dock-model .cl-range-row input[type="number"] { width: calc(90px * var(--cl-text-scale)); }
 .cl-presentation .cl-confusion caption { font-size: var(--cl-label); }
 .cl-presentation .cl-confusion th, .cl-presentation .cl-metrics thead th { font-size: var(--cl-small); }
 .cl-presentation .cl-cell, .cl-presentation .cl-total { font-size: var(--cl-number); font-weight: 650; }
@@ -214,6 +226,8 @@
   .cl-segmented button { padding-left: 9px; padding-right: 9px; }
   .cl-legend .cl-hint { margin-left: 0; }
   .cl-readout { padding: 8px 16px 16px; font-size: 16px; }
+  .cl-dock { margin: 10px 0 16px; padding: 8px 16px; border-radius: 8px; gap: 6px 16px; }
+  .cl-dock-model { display: none; }
   .cl-confusion-layout, .cl-roc-layout { padding-left: 16px; padding-right: 16px; }
   /* The two tables keep their normal phone sizes in lecture view too, so the value columns stay on screen. */
   .cl-matrix-block, .cl-metrics-block, .cl-presentation .cl-matrix-block, .cl-presentation .cl-metrics-block { flex-basis: 100%; }

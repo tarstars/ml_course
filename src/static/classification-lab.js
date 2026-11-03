@@ -3,6 +3,10 @@
   const M = window.MLClassificationMath;
   const D = window.ML_TITANIC;
   const P = window.MLClassificationPlots;
+  // Card 01's penalty controls and their mirrors in the sticky dock under the plot.
+  const PENALTY_SELECTS = ["#cl-penalty", "#cl-dock-penalty"];
+  const LAMBDA_NUMBERS = ["#cl-lambda", "#cl-dock-lambda"];
+  const LAMBDA_RANGES = ["#cl-lambda-range", "#cl-dock-lambda-range"];
   const preference = (key, fallback) => {
     try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; }
   };
@@ -143,9 +147,16 @@
         </div>
         <svg id="cl-plot" viewBox="0 0 960 420" role="img" tabindex="0" aria-label="${w("Score distributions of passengers who survived and who died, cut by the threshold line. Drag, click or use the arrow keys to move the threshold.", "Распределения оценок выживших и погибших пассажиров, разрезанные линией порога. Перетащите, щёлкните или нажимайте стрелки, чтобы сдвинуть порог.")}"></svg>
         <div class="cl-legend"><span><i class="cl-swatch cl-positive"></i>${w("Survived", "Выжили")}</span><span><i class="cl-swatch cl-negative"></i>${w("Died", "Погибли")}</span><span class="cl-hint">${w("Drag the line or click the plot; ← → move it one step, with Shift ten.", "Перетащите линию или щёлкните по графику; ← → сдвигают на шаг, с Shift — на десять.")}</span></div>
-        <div class="cl-threshold-row"><label for="cl-threshold">${w("Threshold", "Порог")}</label><div class="cl-range-row"><input id="cl-threshold-range" type="range" aria-label="${w("Threshold slider", "Ползунок порога")}"><input id="cl-threshold" type="number" required></div></div>
         <p id="cl-readout" class="cl-readout" aria-live="polite"></p>
       </section>
+      <div id="cl-dock" class="cl-dock" role="region" aria-label="${w("Threshold and model controls", "Порог и настройки модели")}">
+        <div class="cl-threshold-row"><label for="cl-threshold">${w("Threshold", "Порог")}</label><div class="cl-range-row"><input id="cl-threshold-range" type="range" aria-label="${w("Threshold slider", "Ползунок порога")}"><input id="cl-threshold" type="number" required></div></div>
+        <div class="cl-dock-model">
+          <label for="cl-dock-penalty">${w("Penalty", "Штраф")}</label><select id="cl-dock-penalty"><option value="none">${w("None", "Нет")}</option><option value="l2">L2</option><option value="l1">L1</option></select>
+          <label for="cl-dock-lambda">λ</label><div class="cl-range-row"><input id="cl-dock-lambda-range" type="range" min="-3" max="2" step="0.1" aria-label="${w("Logarithmic penalty strength", "Логарифмическая сила штрафа")}"><input id="cl-dock-lambda" type="number" required min="0.001" max="100" step="any" aria-label="${w("Penalty strength", "Сила штрафа")}"></div>
+          <div id="cl-dock-split" class="cl-segmented" role="group" aria-label="${w("Data split", "Выборка")}"><button type="button" data-cl-split="train" aria-pressed="false">${w("Train", "Обучение")}</button><button type="button" data-cl-split="test" aria-pressed="false">${w("Test", "Тест")}</button></div>
+        </div>
+      </div>
       ${confusionMarkup(w)}
       ${rocMarkup(w)}
     </section>`;
@@ -212,10 +223,10 @@
     }
     function settings() {
       root.querySelectorAll("[data-cl-group]").forEach((input) => { input.checked = state.on.has(input.dataset.clGroup); });
-      $("#cl-penalty").value = state.penalty;
-      $("#cl-lambda").value = String(state.lambda);
-      $("#cl-lambda-range").value = Math.log10(state.lambda);
-      for (const id of ["#cl-lambda", "#cl-lambda-range"]) $(id).disabled = state.penalty === "none";
+      for (const id of PENALTY_SELECTS) $(id).value = state.penalty;
+      for (const id of LAMBDA_NUMBERS) $(id).value = String(state.lambda);
+      for (const id of LAMBDA_RANGES) $(id).value = Math.log10(state.lambda);
+      for (const id of [...LAMBDA_NUMBERS, ...LAMBDA_RANGES]) $(id).disabled = state.penalty === "none";
     }
     function coefficients() {
       const largest = Math.max(1e-12, ...columns.map((j) => Math.abs(model.weights[j])));
@@ -360,6 +371,12 @@
       refit();
       render();
     }
+    // The dock sticks below the phone menu when that bar is sticky, else at the top of the viewport.
+    function dockOffset() {
+      const menu = document.querySelector(".mobile-menu");
+      const sticky = menu && menu.offsetHeight > 0 && getComputedStyle(menu).position === "sticky";
+      $("#cl-dock").style.top = sticky ? `${menu.offsetHeight}px` : "0px";
+    }
     function presentation() {
       document.body.classList.toggle("lr-presenting", state.presentation);
       root.classList.toggle("cl-presentation", state.presentation);
@@ -369,6 +386,7 @@
       $("#cl-presentation").checked = state.presentation;
       $("#cl-text-size").value = String(state.textScale);
       measureFonts();
+      dockOffset();
     }
     // Pointer x in viewBox units, as a value on the displayed axis within the axis range.
     function pointerValue(event) {
@@ -433,9 +451,10 @@
         scheduleThreshold();
         return;
       }
-      if (event.target.id !== "cl-lambda-range") return;
+      if (!LAMBDA_RANGES.includes(`#${event.target.id}`)) return;
       state.lambda = Number((10 ** +event.target.value).toPrecision(3));
-      $("#cl-lambda").value = String(state.lambda);
+      for (const id of LAMBDA_NUMBERS) $(id).value = String(state.lambda);
+      for (const id of LAMBDA_RANGES) if (id !== `#${event.target.id}`) $(id).value = event.target.value;
       if (!frame) frame = requestAnimationFrame(update);
     });
     listen("change", (event) => {
@@ -459,8 +478,8 @@
       if (el.dataset.clGroup) {
         if (el.checked) state.on.add(el.dataset.clGroup);
         else state.on.delete(el.dataset.clGroup);
-      } else if (el.id === "cl-penalty") state.penalty = el.value;
-      else if (el.id === "cl-lambda") {
+      } else if (PENALTY_SELECTS.includes(`#${el.id}`)) state.penalty = el.value;
+      else if (LAMBDA_NUMBERS.includes(`#${el.id}`)) {
         // Out-of-range or malformed strengths are ignored: the field returns to the current λ.
         if (!el.value || !el.validity.valid || !Number.isFinite(+el.value)) { el.value = String(state.lambda); return; }
         state.lambda = +el.value;
@@ -471,7 +490,7 @@
     presentation();
     update();
     // A new plot width changes the font in viewBox units: redraw the plots.
-    const resized = new ResizeObserver(() => { if (measureFonts()) scheduleThreshold(); });
+    const resized = new ResizeObserver(() => { dockOffset(); if (measureFonts()) scheduleThreshold(); });
     resized.observe(plot);
     resized.observe(rocSvg);
     teardown = () => {

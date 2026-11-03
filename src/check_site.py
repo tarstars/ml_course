@@ -268,10 +268,10 @@ def check_classification(page, base: str, screenshots: Path):
     page.locator("#cl-threshold").press("Tab")
     page.locator('[data-cl-axis="probability"]').click()
     assert abs(float(page.locator("#cl-threshold").input_value()) - 0.8176) < 0.004   # σ(1.5), quantized to the 0.005 slider step
-    page.locator('[data-cl-split="test"]').click()
+    page.locator('#cl-split [data-cl-split="test"]').click()
     expect(lab).to_have_attribute("data-cl-split", "test")
     expect(page.locator("#cl-readout")).to_contain_text("of 418")
-    page.locator('[data-cl-split="train"]').click()
+    page.locator('#cl-split [data-cl-split="train"]').click()
     plot = page.locator("#cl-plot"); box = plot.bounding_box()
     page.mouse.click(box["x"] + box["width"] * 0.5, box["y"] + box["height"] * 0.5)
     moved = float(page.locator("#cl-threshold").input_value())
@@ -306,11 +306,33 @@ def check_classification(page, base: str, screenshots: Path):
     page.locator('[data-cl-group="fare_missing"]').check()
     expect(page.locator("#cl-status")).to_contain_text("constant")
     page.locator('[data-cl-group="fare_missing"]').uncheck()
+    # The sticky dock keeps the threshold and the model controls on screen while cards 03 and 04 are in view.
+    page.locator("#cl-roc-card").scroll_into_view_if_needed()
+    dock = page.locator("#cl-dock").bounding_box()
+    assert 0 <= dock["y"] <= 120, dock
+    roc = page.locator("#cl-roc").bounding_box()
+    assert roc["y"] > dock["y"] + dock["height"] and roc["y"] < page.viewport_size["height"], (dock, roc)
+    page.locator("#cl-dock-lambda").fill("5"); page.locator("#cl-dock-lambda").press("Tab")
+    expect(page.locator("#cl-lambda")).to_have_value("5")
+    page.locator("#cl-dock-penalty").select_option("none")
+    expect(page.locator("#cl-penalty")).to_have_value("none")
+    expect(page.locator("#cl-dock-lambda")).to_be_disabled()
+    page.locator("#cl-dock-penalty").select_option("l2")
+    page.locator("#cl-lambda").fill("1"); page.locator("#cl-lambda").press("Tab")
+    expect(page.locator("#cl-dock-lambda")).to_have_value("1")
+    tp_before = page.locator("#cl-tp").text_content()
+    page.locator("#cl-threshold").fill("0.7"); page.locator("#cl-threshold").press("Tab")
+    assert page.locator("#cl-tp").text_content() != tp_before
+    page.locator("#cl-threshold").fill("0.5"); page.locator("#cl-threshold").press("Tab")
+    page.locator('#cl-dock [data-cl-split="test"]').click()
+    expect(lab).to_have_attribute("data-cl-split", "test")
+    page.locator('#cl-dock [data-cl-split="train"]').click()
+    page.evaluate("window.scrollTo(0, 0)")
     page.locator('[data-lang="ru"]').click()
     expect(page.locator("#cl-title")).to_have_text("Метрики классификации")
     page.locator('[data-lang="en"]').click()
     page.screenshot(path=str(screenshots / "classification-en.png"), full_page=True)
-    print("PASS: classification lab loads, feature switches refit, invalid λ ignored, separation, collinearity and constant columns reported, score distribution with axis toggle, threshold slider, plot click and train/test switch, confusion matrix, metric table with undefined values, ROC curve and operating point, RU/EN")
+    print("PASS: classification lab loads, sticky dock mirrors penalty, λ and split, feature switches refit, invalid λ ignored, separation, collinearity and constant columns reported, score distribution with axis toggle, threshold slider, plot click and train/test switch, confusion matrix, metric table with undefined values, ROC curve and operating point, RU/EN")
 
 
 def check_lecture_view(browser, base: str, screenshots: Path):

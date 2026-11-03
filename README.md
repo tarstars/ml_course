@@ -10,7 +10,7 @@ A bilingual Russian / English website for the 2024–2025 course, published at
 - **Readers:** PDF/image previews, browser-compatible HEIC copies, notebook code and saved outputs, and locally rendered mathematical formulas. Notebooks are never executed by the build or the site.
 - **Languages:** translated navigation and catalog content, with a persistent RU/EN switch and shareable language-specific links. Original attached documents retain their original language.
 - **Regression lab:** a browser-only polynomial/Fourier regression playground with editable points, freehand drawing, L1/L2 regularization, live matrices, coefficients, and diagnostics. Open `#regression?lang=en` or use the sidebar.
-- **Classification lab:** logistic regression on the Titanic passengers fitted in the browser, with 14 feature switches, L1/L2 penalties, a logit/probability score distribution with two class curves, four tinted TP/FN/FP/TN regions and a draggable threshold, the confusion matrix and fourteen metrics, ROC/AUC for both splits, and a train/test switch. Open `#classification?lang=en`.
+- **Classification lab:** logistic regression on the Titanic passengers fitted in the browser, with 14 feature switches, L1/L2 penalties, a logit/probability score distribution with two class curves, four tinted TP/FN/FP/TN regions and a draggable threshold, the confusion matrix and fourteen metrics, ROC/AUC for both splits, and a train/test switch. A sticky strip under the plot keeps the threshold, the penalty strength and the train/test switch at hand while the matrix and ROC are on screen. Open `#classification?lang=en`.
 
 ## Local use
 
