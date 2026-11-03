@@ -10,7 +10,7 @@ A bilingual Russian / English website for the 2024–2025 course, published at
 - **Readers:** PDF/image previews, browser-compatible HEIC copies, notebook code and saved outputs, and locally rendered mathematical formulas. Notebooks are never executed by the build or the site.
 - **Languages:** translated navigation and catalog content, with a persistent RU/EN switch and shareable language-specific links. Original attached documents retain their original language.
 - **Regression lab:** a browser-only polynomial/Fourier regression playground with editable points, freehand drawing, L1/L2 regularization, live matrices, coefficients, and diagnostics. Open `#regression?lang=en` or use the sidebar.
-- **Classification lab:** a browser-only logistic regression on the Titanic passengers with feature switches, none/L1/L2 penalties and live coefficients. Open `#classification?lang=en` or use the sidebar.
+- **Classification lab:** logistic regression on the Titanic passengers fitted in the browser, with 14 feature switches, L1/L2 penalties, a logit/probability score distribution with two class curves, four tinted TP/FN/FP/TN regions and a draggable threshold, the confusion matrix and fourteen metrics, ROC/AUC for both splits, and a train/test switch. Open `#classification?lang=en`.
 
 ## Local use
 
@@ -30,6 +30,9 @@ Open http://127.0.0.1:8000. A web server is needed; opening `index.html` as a lo
 src/
   build.py                 # Static build, validation, previews, notebook rendering
   check_site.py            # Browser and generated-link smoke checks
+  prepare_titanic.py       # Builds titanic-data.js from the Kaggle files and titanic3.csv
+  test_prepare_titanic.py  # Unit tests for the data preparation
+  check_classification.cjs # Node checks: solver, metrics, plots
   index.html               # Site shell and accessible navigation
   content/
     course.json            # Russian catalog and relationships
@@ -41,6 +44,11 @@ src/
     regression-math.js     # SVD least squares, ridge, coordinate-descent lasso
     regression-lab.js      # Interactive plot, point editing, live matrix panels
     regression-lab.css     # Responsive regression lab styles
+    titanic-data.js        # Derived numeric Titanic columns and labels (train and test)
+    classification-math.js # Logistic regression (Newton, coordinate descent), metrics, ROC
+    classification-plots.js # Score distribution and ROC plots
+    classification-lab.js  # Classification lab interface
+    classification-lab.css # Responsive classification lab styles
     style.css              # Responsive layouts
     vendor/mathjax/        # Pinned MathJax 3.2.2 and its license
 .github/workflows/pages.yml # Build and Pages deployment on main
@@ -106,6 +114,13 @@ Check the lab's numerical implementation against analytic fixtures with Node.js:
 
 ```bash
 node src/check_regression.cjs
+node src/check_classification.cjs
+```
+
+Check the Titanic data preparation (the tests that need the real Kaggle files skip when they are absent):
+
+```bash
+uv run python -m unittest src/test_prepare_titanic.py
 ```
 
 Use `--browser /usr/bin/google-chrome` to use an existing Chrome installation. Checks cover both languages, search/filtering, navigation, modal previews, notebook rendering, mobile overflow, and all generated local resource links. External course links are preserved from the notes and are not downloaded or checked for availability by the build.
@@ -115,6 +130,14 @@ The regression lab uses a fixed domain `x ∈ [-1, 1]`, `y ∈ [-1.5, 1.5]` and 
 Freehand drawing appends observations at uneven x-coordinates by default. The **Uniform x-grid + replace painted interval** toggle instead samples at `Δx = 0.04` and replaces observations in the drawn interval. Undo/redo operates on complete point-editing gestures. The lab also provides keyboard-editable coordinates, linked point/matrix highlighting, residuals, reproducible presets, and paginated matrices that use every observation in the fit.
 
 The lab opens in **Lecture view** for classroom TVs and projectors: full-width layout, high contrast, 32 px matrix values and coefficients, and plot labels that retain their size as the chart resizes. The graph stays beside a live panel with **θ**, **X/Y** (five observations per page), and **XᵀX** tabs. The determinant of the original `XᵀX` is pinned above the tabs and updates during drawing and dragging. The coordinate editor is below the workspace. **Text size** increases the numbers to 40 px or 48 px; the preference is saved in the browser. Turn Lecture view off to restore the course navigation.
+
+The classification lab fits logistic regression in the browser (Newton's method for no penalty and L2, coordinate descent for L1). The objective is `Σᵢ log(1 + exp(−sᵢ zᵢ)) + λ·P(w)` with `sᵢ = ±1`, `zᵢ = w·xᵢ + b`, `P = ½‖w‖²` for L2 or `‖w‖₁` for L1, and λ = 0 for "none"; the intercept is unpenalized. Binary columns are 0/1; age, sibsp, parch, log(1+fare) and family size are standardized with the training mean and population standard deviation. Scikit-learn equivalence: `LogisticRegression(penalty="l2", C=1/λ, fit_intercept=True, solver="lbfgs", tol=1e-8)` on the committed matrix reproduces the L2 coefficients to about 1e-4, and L1 corresponds to `penalty="l1", solver="saga"` up to solver tolerance. Under "none" the default feature set is already separated (three female passengers with rare titles all survived), and the lab says so; with collinear columns (family size = sibsp + parch + 1) only predictions and metrics are unique, and the lab says that too. Lecture view and text size share the regression lab's saved preference. `check_site.py` also covers the classification lab: feature switches, λ validation, the separation/collinearity/constant notes, axis toggle and threshold, train/test switch, confusion matrix, metrics and ROC against the shipped reference, lecture view, and mobile widths.
+
+The training set is Kaggle `train.csv` (891 passengers, 342 survived). The independent test set is Kaggle `test.csv` (418 passengers), whose labels were recovered from Vanderbilt's public `titanic3.csv` (https://hbiostat.org/data/repo/titanic3.csv, originally Encyclopedia Titanica) by matching name, ticket, class and sex; all 418 matched, and the 891 training labels agree 891/891. 158 of the 418 test passengers survived. Imputation and scaling statistics come from the training rows only. Kaggle's files are not redistributed: `src/static/titanic-data.js` carries only derived numeric columns and labels. To regenerate it (standard library only):
+
+```bash
+uv run python src/prepare_titanic.py --train <train.csv> --test <test.csv> --titanic3 <titanic3.csv> --out src/static/titanic-data.js
+```
 
 ## GitHub Pages
 
