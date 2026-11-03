@@ -257,11 +257,31 @@ def check_classification(page, base: str, screenshots: Path):
     expect(page.locator("#cl-status")).to_contain_text("collinear")
     page.locator('[data-cl-group="family_size"]').uncheck()
     page.locator("#cl-penalty").select_option("l2")
+    expect(page.locator('[data-cl-axis="probability"]')).to_have_attribute("aria-pressed", "true")
+    expect(page.locator("#cl-threshold")).to_have_value("0.5")
+    expect(page.locator("#cl-plot .cl-curve")).to_have_count(2)
+    expect(page.locator("#cl-plot .cl-region")).to_have_count(4)
+    expect(page.locator("#cl-readout")).to_contain_text("of 891")
+    page.locator('[data-cl-axis="logit"]').click()
+    expect(page.locator("#cl-threshold")).to_have_value("0")
+    page.locator("#cl-threshold").fill("1.5")
+    page.locator("#cl-threshold").press("Tab")
+    page.locator('[data-cl-axis="probability"]').click()
+    assert abs(float(page.locator("#cl-threshold").input_value()) - 0.8176) < 0.004   # σ(1.5), quantized to the 0.005 slider step
+    page.locator('[data-cl-split="test"]').click()
+    expect(lab).to_have_attribute("data-cl-split", "test")
+    expect(page.locator("#cl-readout")).to_contain_text("of 418")
+    page.locator('[data-cl-split="train"]').click()
+    plot = page.locator("#cl-plot"); box = plot.bounding_box()
+    page.mouse.click(box["x"] + box["width"] * 0.5, box["y"] + box["height"] * 0.5)
+    moved = float(page.locator("#cl-threshold").input_value())
+    assert 0.3 < moved < 0.7, moved                                      # the plot's centre is p ≈ 0.475, not the 0.818 set before
+    page.locator("#cl-threshold").fill("0.5"); page.locator("#cl-threshold").press("Tab")
     page.locator('[data-lang="ru"]').click()
     expect(page.locator("#cl-title")).to_have_text("Метрики классификации")
     page.locator('[data-lang="en"]').click()
     page.screenshot(path=str(screenshots / "classification-en.png"), full_page=True)
-    print("PASS: classification lab loads, feature switches refit, invalid λ ignored, separation and collinearity reported, RU/EN")
+    print("PASS: classification lab loads, feature switches refit, invalid λ ignored, separation and collinearity reported, score distribution with axis toggle, threshold slider, plot click and train/test switch, RU/EN")
 
 
 def check_lecture_view(browser, base: str, screenshots: Path):
